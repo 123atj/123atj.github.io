@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>算法 - Hexo</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="单源最短路-堆优化dijkstraarrays.fill(he，-1);void add(int a, int b, int c) {    e[idx] &amp;#x3D; b;    ne[idx] ,"> 
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+    
+    
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="算法 - Hexo"/>
+    <meta name="twitter:description" content="单源最短路-堆优化dijkstraarrays.fill(he，-1);void add(int a, int b, int c) {    e[idx] &amp;#x3D; b;    ne[idx] ,"/>
+    
+    
+    
+    
+    <meta property="og:site_name" content="Hexo"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content="算法 - Hexo"/>
+    <meta property="og:description" content="单源最短路-堆优化dijkstraarrays.fill(he，-1);void add(int a, int b, int c) {    e[idx] &amp;#x3D; b;    ne[idx] ,"/>
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+    <script>window.searchDbPath = "/search.xml";</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Hexo</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://example.com"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">算法</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">算法</h1>
+        <div class="stuff">
+            <span>一月 05, 2022</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <p>单源最短路-堆优化dijkstra<br>arrays.fill(he，-1);<br>void add(int a, int b, int c) {<br>    e[idx] &#x3D; b;<br>    ne[idx] &#x3D; he[a];<br>    he[a] &#x3D; idx;<br>    w[idx] &#x3D; c;<br>    idx++;<br>}<br>遍历以a为起的边<br>for(int i &#x3D; he[a] i !&#x3D;-1 i&#x3D;ne[i]){<br>      int b &#x3D; e[i]，c &#x3D; w[i]<br>}<br>dist[x]&#x3D;y 表示起点从到x的举例为y<br>void dijkstra() {<br>        &#x2F;&#x2F; 起始先将所有的点标记为「未更新」和「距离为正无穷」<br>        Arrays.fill(vis, false);<br>        Arrays.fill(dist, INF);<br>        &#x2F;&#x2F; 只有起点最短距离为 0<br>        dist[k] &#x3D; 0;<br>        &#x2F;&#x2F; 使用「优先队列」存储所有可用于更新的点<br>        &#x2F;&#x2F; 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点<br>        PriorityQueue&lt;int[]&gt; q &#x3D; new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);<br>        q.add(new int[]{k, 0});<br>        while (!q.isEmpty()) {<br>            &#x2F;&#x2F; 每次从「优先队列」中弹出<br>            int[] poll &#x3D; q.poll();<br>            int id &#x3D; poll[0], step &#x3D; poll[1];<br>            &#x2F;&#x2F; 如果弹出的点被标记「已更新」，则跳过<br>            if (vis[id]) continue;<br>            &#x2F;&#x2F; 标记该点「已更新」，并使用该点更新其他点的「最短距离」<br>            vis[id] &#x3D; true;<br>            for (int i &#x3D; he[id]; i !&#x3D; -1; i &#x3D; ne[i]) {<br>                int j &#x3D; e[i];<br>                if (dist[j] &gt; dist[id] + w[i]) {<br>                    dist[j] &#x3D; dist[id] + w[i];<br>                    q.add(new int[]{j, dist[j]});<br>                }<br>            }<br>        }<br>    }</p>
+<p>最近公共祖先<br><img src="/image.png" alt="alt text"><br>如上图，7和9的最近公共祖先是7，<br>9和18的最近公共祖先是3</p>
+<p>倍增算法<br>算法的时间复杂度为O(nlogn)<br>记录各个点的深度和他们2^i级的的祖先<br>用数组depth表示每个节点的深度，<br>fa[i][j]表示节点i的2^j 级祖先</p>
+<p>void add(int x,int y){<br>    edge[++cnt].to&#x3D;y;<br>    edge[cnt].next&#x3D;head[x];<br>    head[x]&#x3D;cnt;<br>}</p>
+<p>&#x2F;&#x2F;now表示当前节点，fath表示它的父亲节点<br>void dfs(int now, int fath) {<br>    fa[now][0] &#x3D; fath; depth[now] &#x3D; depth[fath] + 1;<br>    for(int i &#x3D; 1; i &lt;&#x3D; lg[depth[now]]; ++i){<br>      &#x2F;&#x2F;这个转移可以说是算法的核心之一<br>        &#x2F;&#x2F;意思是now的2^i祖先等于now的2^(i-1)祖先的2^(i-1)祖先<br>      &#x2F;&#x2F;2^i &#x3D; 2^(i-1) + 2^(i-1)<br>      fa[now][i] &#x3D; fa[fa[now][i-1]][i-1];	<br>  }<br>  &#x2F;&#x2F;遍历和当前结点相连的所有的边（按输入的倒序），最后一条边的 edge[i].next&#x3D;&#x3D;0<br>    for(int i &#x3D; head[now]; i; i &#x3D; edge[i].next)<br>        if(edge[i].to !&#x3D; fath) dfs(edge[i].to, now);<br>  }</p>
+<p>预处理完毕后，我们就可以去找它的LCA<br>了，为了让它跑得快一些，我们可以加一<br>个常数优化</p>
+<p> &#x2F;&#x2F;预先算出log_2(i)+1的值，用的时<br> &#x2F;&#x2F;候直接调用就可以了<br>for(int i &#x3D; 1; i &lt;&#x3D; n; ++i)<br>      lg[i] &#x3D; lg[i-1] + (1 &lt;&lt; lg[i-1] &#x3D;&#x3D; i);</p>
+<p>倍增LCA<br>我们先把两个点提到同一高度，再统一<br>开始跳。</p>
+<p>但我们在跳的时候不能直接跳到它们的LCA，因为这可能会误判，比如44和88，在跳的时候，我们可能会认为11是它们的LCA，但11只是它们的祖先，它们的<br>LCA其实是33。所以我们要跳到它们LCA的下面一层，比如44和88，我们就跳到44和55，然后输出它们的父节点，这样就不会误判了</p>
+<p>int LCA(int x, int y) {<br>  &#x2F;&#x2F;不妨设x的深度 &gt;&#x3D; y的深度<br>    if(depth[x] &lt; depth[y])<br>        swap(x, y);<br>    while(depth[x] &gt; depth[y])<br>        x &#x3D; fa[x][lg[depth[x]-depth[y]] - 1]; &#x2F;&#x2F;先跳到同一深度<br>    if(x &#x3D;&#x3D; y)  &#x2F;&#x2F;如果x是y的祖先，那他们的LCA肯定就是x了<br>        return x;<br>    for(int k &#x3D; lg[depth[x]] - 1; k &gt;&#x3D; 0; –k) &#x2F;&#x2F;不断向上跳（lg就是之前说的常数优化）<br>        if(fa[x][k] !&#x3D; fa[y][k])  &#x2F;&#x2F;因为我们要跳到它们LCA的下面一层，所以它们肯定不相等，如果不相等就跳过去。<br>        	x &#x3D; fa[x][k], y &#x3D; fa[y][k];<br>    return fa[x][0];  &#x2F;&#x2F;返回父节点<br>}</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title="0" data-url="http://link.hhtjim.com/163/425570952.mp3"></li>
+                        
+                    
+                        
+                            <li title="1" data-url="http://link.hhtjim.com/163/425570952.mp3"></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+        
+    <div id="gitalk-container" class="comment link"
+		data-enable="false"
+        data-ae="false"
+        data-ci=""
+        data-cs=""
+        data-r=""
+        data-o=""
+        data-a=""
+        data-d="false"
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/typed.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
