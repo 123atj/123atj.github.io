@@ -3,16 +3,149 @@
   <entry>
     <title>JVM</title>
     <url>/2023/04/05/JVM/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>1.jvm参数设置<br>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
+<p>2.new对象做了什么&#x2F;对象创建过程<br>•类加载检测<br>jvm遇到new指令后，会检查该对象的符号引用是否在常量池中，如果存在那么会进行类加载检测，否则进行类加载过程<br>•分配内存<br>分配内存的方法有指针碰撞 空闲列表，jvm一般采用cas+失败重试进行内存分配为了避免并发分配竞争问题，每个线程在JVM启动时都会在Eden区分配一块TLAB内存(线程本地分配缓冲)用于分配内存，如果TLAB内存不足只能在Eden区进行分配<br>•初始化<br>给对象分配空间后，对空间进行赋值默认值<br>•设置对象头<br>每个对象都有对象头、实例数据和对齐填充。对象头包括mardword、klass pointer、数组长度<br>•执行<init>方法<br>设置完对象头后执行init方法按照预期值对内存空间进行初始化，然后执行构造方法</p>
+<p>3.类的实例化顺序<br>静态变量→静态代码块→普通变量→普通代码块→构造方法<br>•静态变量和静态代码块<br>在类加载到jvm初始化一次<br>•普通变量和普通代码块<br>每次类对象实例化时初始化</p>
+<p>4.什么是栈上分配<br>一般new出来的对象都是放在堆上的，当对象没有被引用时会被GC回收，当对象创建过多时，GC会有一定压力，所以为了避免临时对象直接分配到堆上，JVM可以通过逃逸分析，将不被外部引用的对象不进行创建，采用标量替换的方式直接分配到栈上，这样可以随着栈帧的出栈而销毁，减轻GC压力<br>逃逸分析 可以理解为 对象被return就代表逃逸<br>标量替换 可以理解为 将对象的成员变量拆出来，标识是哪个对象的</p>
+<p>5.常量池的分类<br>•class常量池<br>存放编译期间的字面量和符号引用<br>•运行时常量池<br>在jvm运行期间，会将字符串常量池的静态数据加载到方法区<br>•全局常量池<br>存放字符串的引用值<br>•字符串常量池<br>用于缓存字符串<br>1)当以字符串常量的方式创建字符串，会先从常量池中查找，如果找到就返回其引用，否则在常量池中创建并返回引用<br>2)当以new的方式创建字符串，无论常量池中是否存在字符串引用，都会在堆内存中创建一个字符串对象并返回引用</p>
+<p>6.判断垃圾算法<br>•引用计数法<br>每个对象维护一个计数器 被引用+1 不被引用-1 但是无法解决循环依赖问题<br>•可达性分析法<br>从gc root出发，通过引用对象图，标记出所有非垃圾对象，清理未被标记的对象</p>
+<p>7.哪些对象可以作为gc root<br>•虚拟机栈引用的对象<br>•静态属性引用的对象<br>•常量引用的对象<br>•本地方法栈中jni引用的对象<br>•持有同步锁的对象，spring bean</p>
+<p>8.jvm组成部分<br>•两个系统<br>类加载子系统-将字节码文件加载到jvm内存中<br>字节码执行引擎-负责gc 执行字节码文件指令和修改程序计数器的值<br>•两个组件<br>运行时数据区(即jvm内存)<br>本地接口(JNI-Java native interface)</p>
+<p>9.jvm类加载过程<br>分为7个阶段<br>加载 链接(验证 准备 解析) 初始化 使用 卸载<br>•加载<br>将字节码文件加载到运行时的数据区的方法区(即jvm内存的方法区)<br>•验证<br>对字节码进行校验，包括文件格式验证、元数据验证、字节码验证和符号引用验证<br>如魔数、主次版本号<br>•准备<br>将类中的静态变量分配空间并设置默认值<br>•解析<br>将符号引用变为直接引用<br>符号引用在字节码文件中的以字符串的形式表示的<br>直接引用是指向内存的实际对象或函数的指针<br>•初始化<br>执行类构造器方法，执行完成后类被初始化为可执行的状态，类的静态变量被正确赋值及静态代码块执行完毕</p>
+<p>10.哪些情况下类被卸载<br>•垃圾收集时，如果类的Class对象没有<br>   被任何引用指向，即无法通过反射访问<br>   该类。则类会被垃圾收集器回收，导致<br>   类被卸载<br>•程序退出时，Java虚拟机会退出卸载<br>   所有类<br>•当类的加载器被回收<br>•当前类的所有对象实例都被回收</p>
+<p>11.Java oom类型<br>• java heap space<br>    对象过多，过大或堆内存泄露导致的<br>    内存不足<br>•unable to create native thread<br>   创建过多线程<br>•PermGen space &#x2F; Metaspace<br>   存储类的字节码和字符串常量池的永生<br>   代内存满了 &#x2F; 类数量加载过多或类信息<br>   占用空间过多<br>•Direct buffer memory<br>   使用Java的nio(非阻塞I&#x2F;O)直接内存并<br>   且超过–Xx:MaxDirectMemory参数<br>   设定的最大值<br>•gc overhead limit exceeded<br>  jvm花费大量时间进行垃圾回收且回收  空间小  垃圾回收频繁 无法解决内存问题</p>
+<p>stackoverflow栈溢出是线程栈空间不足<br>不会导致oom，发生在函数递归调用过深或局部变量占用太大超过栈的容量限制</p>
+<p>12.gc(garbage collection)分为<br>•新生代gcminor gc<br>   新创建的对象加入时，新时代空间不足<br>   触发新时代gc<br>•老年代gcmajor gc<br>   经过gc后仍存活的对象进入老年代导致<br>   老年代空间不足触发老年代gc<br>•全局gcfull gc<br>   永久代空间不足 手动触发gc</p>
+<p>13.jvm区域划分<br>•堆 元空间(方法区) 本地方法区<br>   虚拟机栈 程序计数器<br>•堆分为新时代和老年代<br>•线程共享的区域:堆 元空间<br>•线程私有的区域:本地方法区 虚拟机栈<br>                          程序计数器<br>•堆分为新生代和老年代，新手代分为<br>   eden(伊甸区)和s0 s1(两个存活区)，<br>   占比为8:1:1</p>
+<p>14.垃圾回收器有哪些<br>1)单线程&#x2F;串行回收器<br>•serial回收器<br>•serial old回收器<br>2)多线程&#x2F;并行回收器<br>•parallel<br>•parallel old<br>•parnew与cms搭配使用<br>3)多线程&#x2F;响应时间优先的并发回收器<br>•cms(concurrent mark sweep)<br>•g1(garbage–first)</p>
+<p>15.cms和g1特点<br>   CMS特点(jdk1.5)<br>•并发收集 低停顿<br>•避免老年代出现长时间卡顿(stw)<br>•工作流程<br>   初始标记 并发标记 并发预清理<br>   重新标记 并发清除 并发重置<br>   初始标记和重新标记需要stw<br>•无法清理浮动垃圾<br>   并发标记和并发清理阶段，用户线程继<br>   续运行会有新的垃圾对象产生，这一部<br>   分垃圾对象是在标记过程结束后产生的<br>   CMS无法在当次收集中处理掉它们，<br>   需要留到下一次垃圾收集时再清理掉。<br>   这一部分垃圾称为“浮动垃圾”<br>•使用标记清除算法，会产生大量空间碎<br>   片<br>•并发模式失败(concurrent mode failure)<br> 1)老年代空间不足<br>   cms在并发标记过程在发现大量对象需<br>   要晋升到老年代且老年代空间不足以容纳这些对象时会触发cmf<br>   并发阶段未完成<br> 2)cms没能在并发阶段内完成预取工作，<br>   为了防止oom 需要进行full gc会stw，<br>   无法进行并行清理<br>3)由于在垃圾回收阶段用户线程还在并发<br>   运行，那就还需要预留足够的内存空间<br>   提供给用户线程使用，因此CMS不能<br>   像其他回收器那样等到老年代几乎完全<br>   被填满了再进行回收，必须预留一部分<br>   空间供并发回收时的程序运行使用。默<br>   认情况下，当老年代使用了 92% 的空<br>   间后就会触发 CMS 垃圾回收，这个值<br>   通过-XXCMSInitiatingOccupancy<br>   Fraction 参数来设置。</p>
+<p>16.cms在并发标记阶段的多标和漏标<br>标的是非垃圾对象<br>•多标(并发标记阶段)<br>多标 就是本应该是垃圾对象，但是由于用户线程还在运行，对象间的引用关系可能发生变化，所以没来及去清除存活标记<br>•漏标(并发标记 重新标记阶段)<br>漏标就是新来的对象引用了GC Root链上的对象，但是由于用户线程还在运行，没来得及标记为非垃圾，被GC误清除</p>
+<p>17.cms产生的内存碎片<br>•使用参数-xx:+UseCMSCompactAt<br>   FullCollection，让cms在执行full gc<br>   时进行内存碎片整理<br>•设置-xx:CMSFullGCsBefore<br>   Compaction&#x3D;n 参数让cms在执行n次<br>   不带压缩的gc后进行一次带压缩整理的<br>   full gc<br>•当内存碎片严重到cms无法管理时，采<br>   用serial old执行标记 整理算法</p>
+<p>18.解决cms漏标问题<br>•三色标记法<br>•写屏障<br>•增加重新标记阶段的暂停时间<br>•调整cms触发的阈值</p>
+<p>19.cms三色标记<br>•黑色<br>所有引用扫描过<br>•白色<br>未被访问过<br>•灰色<br>访问过，但至少一个对象的引用没有被扫描过</p>
+<p>20.cms三色标记法的作用<br>•用来解决漏标问题<br>•分为增量更新和原始快照<br>•增量更新是通过记录下黑色对象新增的白色对象引用关系，将黑色对象回退到灰色对象，重新深度扫描一次，一般用于重新标记阶段<br>•原始快照是通过记录下灰色对象删除的白色对象的引用关系，在后续的并发标记或重新标记阶段可能会被重新考虑，以灰色对象为根简单扫描一下确保不会漏标，将白色对象标记为黑色对象，当作浮动垃圾处理，等待下一轮Gc</p>
+<p>21.G1特点(jdk1.7)<br>•分代收集<br>   将堆划分成多个大小相等的独立 Regi<br>   on区域(2048个)<br>•并行与并发<br> 使用多线程进行垃圾回收并尽量减少stw<br> 的停顿时间，其他用户线程进行运行<br>•空间整合<br>   从整体看，基于标记-整理算法<br>   从局部看，基于标记－复制算法<br>•可预测的停顿<br>   G1跟踪各个Region的回收获得的空间<br>   大小和回收所需要的经验值，维护一个<br>   优先列表<br>•运行流程<br>   初始标记 并发标记 最终标记 筛选回收<br>   初始标记 和 CMS的初始标记 一样<br>   并发标记 和 CMS的并发标记 一样<br>   最终标记 和 CMS的重新标记 一样，但<br>   是这里对于 漏标 的对象采用 原始快照<br>   的方式进行处理<br>•使用humogous区存放大对象<br>如果humogous存放不下那么会使用多个region区进行存放<br>•筛选回收<br>stw时对未标记的region进行清理，根据每个region区域回收价值和成本进行排序<br>根据用户预期停顿时间来选择合适的回收方式，不会回收所有垃圾对象，考虑到预期停顿时间，只会回收接近预取停顿时间的region，其余region等待下一次gc</p>
+<p>22.jdk8之后出现的gc<br>•epsilon(jdk11)<br>1)它是一个“被动”的收集器，不会执行任何实际的垃圾收集工作，而是当应用程序请求进行垃圾收集时，直接退出程序。它只负责分配内存，并不回收内存。当堆内存耗尽之后，JVM 直接因为 OutOf<br>Memory而终止Epsilon的主要用途是用于性能测试和故障排查，帮助开发者确定应用程序的垃圾收集开销是否过大。<br>2)适合运行时间很短的程序，比如命令行程序，定期执行的简单任务<br>3)对延迟和吞吐量很敏感的程序。回收垃圾的操作会带来延迟，Epsilon 完全避免了这些延迟<br>•zgc(jdk11)<br>ZGC（Z Garbage Collector）是一款低延迟垃圾收集器，其设计目标是实现可预测的、小于10毫秒的停顿时间。ZGC采用了基于颜色的指针追踪技术，以及并发处理等方式，从而实现了低延迟和高吞吐量的平衡。</p>
+<p>23.垃圾收集器的核心指标，设计者追求什么<br>•吞吐量<br>•暂停时间<br>•内存占用<br>追求在延迟可控的情况下，获得尽可能高的吞吐量，追求全功能收集器</p>
+<p>25.什么是STW<br>•STW 就是stop the world，会暂停所有用户线程来进行GC，对于暂停的时间与垃圾收集器有关<br>•年轻代的Minor GC(Young GC) 几乎无感觉<br>•老年代的Full GC可能会感觉到卡顿一下</p>
+<p>26.为什么要进行STW<br>STW 主要是为了更好的维护引用对象图来进行GC，如果不进行STW，用户线程还在进行着，可能一些对象还没来得及被标记就被GC了，这个是比较严重的问题</p>
+<p>27.区分并发与并行的区别：<br>•并行清理只是一个概念，是指多个垃圾<br>   回收线程同时运行，来清理垃圾，此时<br>   没有任何用户线程处于工作状态<br>•而并发清理是只有一个垃圾回收线程运<br>   行，其他用户线程依然处于工作状态，<br>   并会源源不断地产生浮动垃圾，CMS<br>   中的就是并发清理</p>
+<p>28.jvm调优</p>
+]]></content>
+      <tags>
+        <tag>文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HashMap</title>
+    <url>/2022/04/05/HashMap/</url>
+    <content><![CDATA[<p>1.什么是哈希?什么是哈希表?<br>1)哈希是一种能够将输入内容通过特定的散列算法转换成固定长度的哈希值，作为数据的唯一标识<br>2)哈希是不可逆的，因此可以用于密码存储 数据完整性校验 md5 sha1 sha256<br>3)哈希表是一种通过key访问内存存储位置的数据结构，通过哈希函数计算key的哈希值将数据映射到对应哈希值的位置</p>
+<p>2.为什么hashmap使用红黑树<br>当链表长度过长时会导致查询效率降低因此jdk1.8引入了红黑树<br>红黑树的特点<br>1)红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2)与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3)解决链表长度过长</p>
+<p>3.hashmap为什么不是线程安全jdk1.7hashmap扩容可能死循环及数据丢失<br>jdk1.8扩容可能数据丢失<br>1)扩容操作的并发问题<br>当进行扩容操作时，会重新计算哈希并定位新的位置，多个线程进行修改操作会导致一些线程在旧表执行，一些线程在新表执行，在旧表执行的线程可能会导致数据丢失或覆盖已经迁移的数据<br>2)哈希冲突导致的数据覆盖问题<br>两个线程进行put操作并计算出相同的hash值发生哈希冲突，一个线程判断哈希冲突被挂起，另一个线程执行插入操作，当第一个线程恢复执行时进行插入操作覆盖原有的数据<br>3)原子性和内存可见性<br>hashmap操作不是原子性的，意味着操作可以被打断导致数据不一致。<br>由于线程缓存可见性问题，一个线程对hashmap的修改可能不会立即对其他线程可见</p>
+<p>4.如何解决hashmap的线程安全问题<br>1)使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2)加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3)使用concurrenthashmap<br>4)volatile关键字保证内存可见性</p>
+<p>5.concurrenthashmap如何实现size()<br>•size()方法基于基于baseCount和CountCell数组，CountCell数组类似LongAdder动态扩展数组<br>•size()具体流程<br>1)读取baseCount的值<br>2)检查并累加所有CountCell的计数值<br>3)两次遍历策略<br>第一次遍历统计baseCount和CountCell的总和，第二次遍历再次统计并对比两次遍历所有CountCell的修改次数，如果两次的修改次数相同则认为统计结果有效并返回该结果，否则重新统计</p>
+<p>6.hashmap读写 containskey效率<br>读&#x2F;写 理想情况为O(1) 在保证链表长度为1的情况下可以是O(1)即无哈希冲突 最差O(N)<br>containskey  O(1)</p>
+<p>7.hashmap扩容为什么会死循环<br>jdk1.7采用的是头插法，扩容可能成链表环导致死循环<br>而jdk1.8采用尾插法<br>多个线程同时对链表进行操作，头插法可能会导致链表中的节点指向错误的位置，从而形成一个环形链表，进而使得查询元素的操作陷入死循环无法结束</p>
+<p>8.hashmap如何确定key的位置<br>先使用hashcode()求出key的哈希值<br>使用扰动函数计算哈希值<br>哈希值 &amp; (n-1) n是数组长度</p>
+<p>扰动函数在jdk1.8<br>hash ^ (hash &gt;&gt;&gt; 16)<br>在jdk1.7<br>hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
+<p>9.解决哈希冲突的方法<br>1.开放地址法:分为线性探测 和二次探测 和双重散列<br>找到空的数组下标<br>2.再哈希<br>使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)<br>如果哈希值一样，存储在数组的下标一样并链表的形式存储<br>4.建立公共溢出区</p>
+<p>10.hashmap红黑树会无限高吗<br>红黑树是自平衡二叉查找树，保证根结点到叶子结点的最长路径不超过最短路径的两倍从而维护树的平衡 当红黑树的高度超过8时，会进行旋转</p>
+<p>11.二叉查找树 红黑树 avl树的区别<br>二叉查找树是最基本的查找树结构，红黑树和avl树在二叉查找树的基础上为了提高查询效率进行优化<br>红黑树是自平衡二叉查找树，平衡是弱平衡，通过任何路径都不超过其他路径的两倍来保持树的平衡，旋转次数少，旋转分为左旋和右旋，适合插入 删除频繁的场景<br>avl树是严格平衡二叉查找树，要求任何节点的两个子树高度最大差为1保持平衡<br>比红黑树在插值上更加高效，但插入和删除会有更多旋转，增加维护平衡成本</p>
+]]></content>
+      <tags>
+        <tag>文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySQL</title>
+    <url>/2023/03/05/MySQL/</url>
+    <content><![CDATA[<p>1.读写分离</p>
+<p>2.分库分表<br>•<a href="https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q">https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q</a><br>•<a href="https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg">https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg</a></p>
+<p>3.SQL优化<br>1)加索引+索引使用原则(哪些情况索引失效)<br>2)如果知道要返回的数据有n条 可以使用limit n<br>3)只返回需要的字段 不用select *<br>4)尽量避免使用子查询<br>5)用in 代替or<br>6)优化group by<br>•如果对排序没有要求，那么可以order by null，进行group by时会对group by的字段进行order by<br>•用where代替having，having只会在检索出所有记录才对结果集进行过滤<br>7)多次插入改为批量插入<br>8)exists适合于外表小 内表大 先查询外表，in适合外表大 内表小 先查询内表<br>select * from a where id in (select id from b) 括号是内表<br>9)尽量使用数据型字段<br>数据型字段进行匹配时只需要一次，而字符串形式字段需要对每个字符进行匹配<br>10)优化join连接<br>执行join时会对两个表进行比较<br>可以用记录数少的表作为驱动表，记录数多的作为被驱动表，左连接时对右表设置索引<br>•当不带where条件<br>a left join b  a是前驱表<br>a right join b b是前驱表<br>a inner join b 数据少的是前驱表<br>a straight_join b  左表为前驱表<br>•带where条件<br>带where条件的表是驱动表</p>
+<p>4.b+树高频率操作增删后会发生什么<br>mysql碎片 页分裂 磁盘io</p>
+<p>5.innodb和myisam区别<br>•innodb支持事务及事务四种隔离级别，myisam不支持事务 但每次操作都是原子性的<br>•innodb支持外键，myisam不支持<br>•innodb是聚簇索引，myisam是非聚簇索引<br>•innodb支持行锁和表锁，但是可能因为范围而锁表，myisam支持表锁<br>•innodb不存储总行数，myisam存储总行数<br>•innodb适合增删改查，myisam适合大量查询</p>
+<p>6.MySQL索引结构 为什么使用B+tree而不用B树<br>• B+ 树的非叶子节点不存放实际的记录<br>    数据，仅存放索引，因此数据量相同<br>    的情况下，相比存储即存索引又存记<br>    录的 B 树，B+树的非叶子节点可以存<br>    放更多的索引，因此 B+ 树可以比 B<br>    树更「矮胖」，查询底层节点的磁盘<br>    I&#x2F;O次数会更少。<br>•B+ 树有大量的冗余节点（所有非叶子<br>   节点都是冗余索引），这些冗余索引让<br>    B+ 树在插入、删除的效率都更高，比<br>    如删除根节点的时候，不会像 B 树那<br>    样会发生复杂的树的变化；<br>•B+ 树叶子节点之间用链表连接了起<br>   来，有利于范围查询，而 B 树要实现<br>   范围查询，因此只能通过树的遍历来完<br>   成范围查询，这会涉及多个节点的磁盘<br>   I&#x2F;O 操作，范围查询效率不如 B+ 树。</p>
+<p>7.索引类型<br>•主键索引 primary key<br>主键索引是唯一且非空的索引，它确保了表中数据的唯一性，并且一个表只能有一个主键索引，其他索引为非主键索引 也叫二级索引<br>•唯一索引 unique<br>唯一索引要求索引列中的值必须是唯一的，但它允许NULL值的存在。这种索引通常用于确保数据列的唯一性<br>•普通索引<br>允许在定义索引的列中插入重复值和NULL值。一个表可以有多个普通索引<br>•全文索引 fulltext<br>支持全文搜索，它可以在文本类型的列上创建，以便快速检索文章或报告中的关键词<br>•单列索引<br>单列索引是只在单个列上创建的索引，它可以提高基于该列的查询效率<br>•多列索引(组合索引)<br>多列索引又称为复合索引，它是在多个列上创建的索引，可以提高涉及这些列的查询效率<br>•聚簇索引<br>聚簇索引决定了数据在磁盘上的物理存储顺序，是一种数据存储方式。通常与主键索引一起使用，一般建表会用一个自增主键做聚簇索引，没有的话MySQL会默认创建</p>
+<p>8.聚簇索引和非聚簇索引和覆盖索引<br>•聚簇索引就是叶子节点存储索引和数<br>   据，InnoDB就属于聚簇索引<br>•非聚簇索引就是叶子节点存储索引和磁<br>   盘地址，通过磁盘地址找到存储的数据<br>   需要回表操作所以效率比聚簇索引慢<br>   MylSAM就属于非聚簇索引<br>•覆盖索引就是包含查询所有字段的索引</p>
+<p>9.建立索引的方式<br>1)alter table 表名 add 索引类型(字段)<br>2)create 索引类型 索引名 on 表名(字段)<br>3)创建表时直接添加<br>create table students(<br>    id int primary key，<br>    name varchar(20)，<br>索引类型 idx_students_name (name)<br>)</p>
+<p>10.where和having的区别<br>•where在数据分组和聚合之前对单行记录进行过滤<br>•where不能直接使用聚合函数(sum avg)<br>•having则在数据分组和聚合之后对分组结果进行过滤，且可以使用聚合函数</p>
+<p>11.创建索引的字段<br>1)主键<br>2)经常出现在where字句的字段，即常被作为查询条件 分组条件 排序条件的字段<br>3)针对数据量大，且查询比较频繁的表建立索引<br>4)选择区分度高的字段，即该字段在表中的值大多是不相同的<br>5)选择小字段<br>6)经常与其他表进行连表查询，在连接字段上可以建立索引<br>7)如果是字符串类型的字段，字段的长度较长，可以针对字符串的特点，建立前缀索引<br>为student表的name字段创建长度为3的前缀索引<br>create index idx_student_name on<br>student(name(3)) </p>
+<p>12.如何确定语句是否走索引<br>通过使用explain命令分析执行计划，查看type列是否为all，all代表全表扫描，查看key列是否为null 为null代表没有走索引</p>
+<p>6.建立联合索引 字段顺序需要注意<br>1)最左匹配原则 最常用的字段放在最左边<br>2)等值条件字段放左边<br>3)区分度高的字段放左边，即在表中的值大多不同的字段</p>
+<p>13.b+tree索引和哈希索引</p>
+<p>14.建立索引原则<br>•选择字段不为null，区分度高的字段，即在表中的值大多不同的字段<br>•被频繁查询的字段<br>•作为查询条件 分组条件 排序条件的字段<br>•频繁用于连接的字段<br>•尽量建立联合索引<br>•尽量扩展索引而不创建新的索引</p>
+<p>15.索引失效情况<br>•不遵循最左匹配原则<br>•组合索引中间没有用到<br>•在索引列上使用函数 表达式 类型转换<br>•以%开头的like查找<br>•索引字段使用 is null 或者 is not null<br>•索引字段用!&#x3D;或&lt; &gt; 或 not in<br>•使用select *，使用select * 不会直接导致索引失效,如果不走索引就是 where查询范围过大 导致MySQL 最优选择全表扫描了 并不是Select * 的问题<br>•条件查询使用or，且or的前后条件有一个没有用到索引列<br>•in的取值范围太大<br>•发生隐式转换 当操作符两边的数据类型不同时会进行类型转换<br>字符串转换为数值类型时，非数字开头的字符串会转化为0，以数字开头的字符串会截取从第一个字符到第一个非数字内容为止的值为转化结果<br>•如果需要进行 join 的字段两表的字段类型要相同</p>
+<p>16.mvcc<br>•多版本并发控制，用于保证多个事务同时读写数据库时不需要加锁来保证数据的一致性和隔离性<br>•在每行记录后面保存三个隐藏的列，分别为行标识、事务id、回滚指针。实际为两个系统版本号。<br>•当一个事务要对数据库进行修改时，mvcc会为当前事务创建一个数据快照而不是直接修改数据<br>•当一个事务对数据库进行读取时会使用快照读，读取数据会根据对应的数据版本进行查询，如果读取的数据有多个版本号，那么会找到不晚于开始时间的最新版本。快照读不会受到其他修复事务影响<br>•当一个事务对数据库进行修改时会生成新的数据版本，并将修改的数据写入。为修改的数据创建一个新的版本号并将修改后的数据写入新版本，原始版本数据仍然存在，不影响其他事务读取<br>•事务提交和回滚<br>事务提交将数据修改为最新版本并对其他事务可见<br>事务回滚将对数据的修改撤销并对其他事务不可见<br>•版本回收<br>mvcc会定期对数据版本进行回收，删除不需要的旧版本数据<br>•mvcc只用于可重复读和读已提交<br>MVCC 通过创建数据的多个版本和使用快照读取来实现并发控制。读操作使用旧版本数据的快照，写操作创建新版本，并确保原始版本仍然可用。这样，不同的事务可以在一定程度上并发执行，而不会相互干扰，从而提高了数据库的并发性能和数据一致性。<br>•总结:InnoDB的	MVCC	是通过	read	view	和版本链实现的，版本链保存有历史版本记	录，通过	read view	判断当前版本的数据是否可见，如果不可见，再从版本链中找到上一个版本，继续进行判断，直到找到一个可见的版本。</p>
+<p>16.数据库数据隐藏的列<br>•行标识 row_id<br>如果在表中存在主键或非空唯一索引，并且只由整数类型组成，那么row_id直接引用主键或非空唯一索引的值，可以使用select _rowid查询<br>如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引<br>•事务id trx_id<br>表示最后一次插入或更新该行的事务 id<br>•回滚指针  roll_ptr<br>回滚指针，指向该行的 undo log 。如果该行未被更新，则为空</p>
+<p>17.隔离级别<br>•读未提交(脏读 不可重复读 幻读 )<br>允许读取尚未提交的数据变更<br>•读已提交(不可重复读 幻读)<br>允许读取并发事务已经提交的数据<br>•可重复读(幻读)<br>对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改<br>•可串行化<br>最高的隔离级别，完全服从 ACID 的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，所有读写操作都需要</p>
+<p>•丢失修改（脏写）<br>在一个事务读取一个数据时，另外一个事务也访问了该数据，那么在第一个事务中修改了这个数据后，第二个事务也修改了这个数据。这样第一个事务内的修改结果就被丢失，因此称为丢失修改</p>
+<p>•幻读<br>幻读的重点在于记录新增比如多次执行同一条查询语句（DQL）时，发现查到的记录增加了</p>
+<p>•不可重复读<br>不可重复读的重点是内容修改或者记录减少比如多次读取一条记录发现其中某些记录的值被修改</p>
+<p>•脏读<br>读取到没有被提交的数据</p>
+<p>18.事务的特点<br>•原子性<br> 事务的操作要么都成功，要么都失败<br>•一致性<br>数据在事务的开始到结束的过程中要保持一致<br>•隔离性<br>每个事务之间相互隔离<br>•持久性<br>事务完成后数据会被持久化</p>
+<p>19.分布式事务</p>
+<p>20.数据库表设计</p>
+<p>21.MySQL底层使用B+树而不用B树<br>1)b+tree特点<br>•高度平衡<br>•范围查询友好<br>•大容量索引<br>•聚簇索引与非聚簇索引<br>2)B+树与 B 树相比，具备更少的 IO 次数、更稳定的查询效率和更适于范围查询这些优势。<br>•B+树中间节点不存数据只存索引。而B树中间节点存储数据<br>•B+树每次需查询到叶子节点，性能稳定，而B树查找只需要找到匹配的元素，最好情况下找到根结点，最坏找到叶子节点，性能不稳定<br>•B+树范围查询优势明显。首先通过二分查找，找到范围下限，然后同过叶子结点的链表顺序遍历，直至找到上限即可。<br>B树首先二分查找到范围下限，在不断通过中序遍历，直到查找到范围的上限才行。</p>
+<p>22.b+tree的查找过程<br>起始于根节点，自顶向下遍历树，在节点内部典型的使用是二分查找来确定这个位置。</p>
+<p>23.innodb存储引擎结果<br>• 表空间<br>表空间：所有数据都存在表空间中，表空间分系统表空间和独立表空间。<br>•段<br>表空间由段组成，一张表通常有数据段<br>回滚段 索引段等，每个段由N个区和32个零散的页组成<br>•区<br>由连续的页组成，每个区固定大小为1MB<br>•页<br>一个区由64个连续页组成，页默认大小16KB</p>
+]]></content>
+      <tags>
+        <tag>文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>算法</title>
+    <url>/2022/01/05/%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<p>单源最短路-堆优化dijkstra<br>arrays.fill(he，-1);<br>void add(int a, int b, int c) {<br>    e[idx] &#x3D; b;<br>    ne[idx] &#x3D; he[a];<br>    he[a] &#x3D; idx;<br>    w[idx] &#x3D; c;<br>    idx++;<br>}<br>遍历以a为起的边<br>for(int i &#x3D; he[a] i !&#x3D;-1 i&#x3D;ne[i]){<br>      int b &#x3D; e[i]，c &#x3D; w[i]<br>}<br>dist[x]&#x3D;y 表示起点从到x的举例为y<br>void dijkstra() {<br>        &#x2F;&#x2F; 起始先将所有的点标记为「未更新」和「距离为正无穷」<br>        Arrays.fill(vis, false);<br>        Arrays.fill(dist, INF);<br>        &#x2F;&#x2F; 只有起点最短距离为 0<br>        dist[k] &#x3D; 0;<br>        &#x2F;&#x2F; 使用「优先队列」存储所有可用于更新的点<br>        &#x2F;&#x2F; 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点<br>        PriorityQueue&lt;int[]&gt; q &#x3D; new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);<br>        q.add(new int[]{k, 0});<br>        while (!q.isEmpty()) {<br>            &#x2F;&#x2F; 每次从「优先队列」中弹出<br>            int[] poll &#x3D; q.poll();<br>            int id &#x3D; poll[0], step &#x3D; poll[1];<br>            &#x2F;&#x2F; 如果弹出的点被标记「已更新」，则跳过<br>            if (vis[id]) continue;<br>            &#x2F;&#x2F; 标记该点「已更新」，并使用该点更新其他点的「最短距离」<br>            vis[id] &#x3D; true;<br>            for (int i &#x3D; he[id]; i !&#x3D; -1; i &#x3D; ne[i]) {<br>                int j &#x3D; e[i];<br>                if (dist[j] &gt; dist[id] + w[i]) {<br>                    dist[j] &#x3D; dist[id] + w[i];<br>                    q.add(new int[]{j, dist[j]});<br>                }<br>            }<br>        }<br>    }</p>
+<p>最近公共祖先<br><img src="/image.png" alt="alt text"><br>如上图，7和9的最近公共祖先是7，<br>9和18的最近公共祖先是3</p>
+<p>倍增算法<br>算法的时间复杂度为O(nlogn)<br>记录各个点的深度和他们2^i级的的祖先<br>用数组depth表示每个节点的深度，<br>fa[i][j]表示节点i的2^j 级祖先</p>
+<p>void add(int x,int y){<br>    edge[++cnt].to&#x3D;y;<br>    edge[cnt].next&#x3D;head[x];<br>    head[x]&#x3D;cnt;<br>}</p>
+<p>&#x2F;&#x2F;now表示当前节点，fath表示它的父亲节点<br>void dfs(int now, int fath) {<br>    fa[now][0] &#x3D; fath; depth[now] &#x3D; depth[fath] + 1;<br>    for(int i &#x3D; 1; i &lt;&#x3D; lg[depth[now]]; ++i){<br>      &#x2F;&#x2F;这个转移可以说是算法的核心之一<br>        &#x2F;&#x2F;意思是now的2^i祖先等于now的2^(i-1)祖先的2^(i-1)祖先<br>      &#x2F;&#x2F;2^i &#x3D; 2^(i-1) + 2^(i-1)<br>      fa[now][i] &#x3D; fa[fa[now][i-1]][i-1];	<br>  }<br>  &#x2F;&#x2F;遍历和当前结点相连的所有的边（按输入的倒序），最后一条边的 edge[i].next&#x3D;&#x3D;0<br>    for(int i &#x3D; head[now]; i; i &#x3D; edge[i].next)<br>        if(edge[i].to !&#x3D; fath) dfs(edge[i].to, now);<br>  }</p>
+<p>预处理完毕后，我们就可以去找它的LCA<br>了，为了让它跑得快一些，我们可以加一<br>个常数优化</p>
+<p> &#x2F;&#x2F;预先算出log_2(i)+1的值，用的时<br> &#x2F;&#x2F;候直接调用就可以了<br>for(int i &#x3D; 1; i &lt;&#x3D; n; ++i)<br>      lg[i] &#x3D; lg[i-1] + (1 &lt;&lt; lg[i-1] &#x3D;&#x3D; i);</p>
+<p>倍增LCA<br>我们先把两个点提到同一高度，再统一<br>开始跳。</p>
+<p>但我们在跳的时候不能直接跳到它们的LCA，因为这可能会误判，比如44和88，在跳的时候，我们可能会认为11是它们的LCA，但11只是它们的祖先，它们的<br>LCA其实是33。所以我们要跳到它们LCA的下面一层，比如44和88，我们就跳到44和55，然后输出它们的父节点，这样就不会误判了</p>
+<p>int LCA(int x, int y) {<br>  &#x2F;&#x2F;不妨设x的深度 &gt;&#x3D; y的深度<br>    if(depth[x] &lt; depth[y])<br>        swap(x, y);<br>    while(depth[x] &gt; depth[y])<br>        x &#x3D; fa[x][lg[depth[x]-depth[y]] - 1]; &#x2F;&#x2F;先跳到同一深度<br>    if(x &#x3D;&#x3D; y)  &#x2F;&#x2F;如果x是y的祖先，那他们的LCA肯定就是x了<br>        return x;<br>    for(int k &#x3D; lg[depth[x]] - 1; k &gt;&#x3D; 0; –k) &#x2F;&#x2F;不断向上跳（lg就是之前说的常数优化）<br>        if(fa[x][k] !&#x3D; fa[y][k])  &#x2F;&#x2F;因为我们要跳到它们LCA的下面一层，所以它们肯定不相等，如果不相等就跳过去。<br>        	x &#x3D; fa[x][k], y &#x3D; fa[y][k];<br>    return fa[x][0];  &#x2F;&#x2F;返回父节点<br>}</p>
+]]></content>
+      <tags>
+        <tag>算法</tag>
+      </tags>
   </entry>
   <entry>
     <title>Lock</title>
     <url>/2023/04/03/Lock/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>1.什么是cas(比较和交换)<br>•用于实现乐观锁<br>•CAS 涉及到三个操作数：<br>V：要更新的变量值(Var)<br>E：预期值(Expected)<br>N：拟写入的新值(New)<br>•当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则是前线程放弃更新。<br>•举一个简单的例子：线程 A 要修改变量 i 的值为 6，i 原值为 1（V &#x3D; 1，E&#x3D;1，N&#x3D;6，假设不存在 ABA 问题）。<br>•i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。<br>•i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。</p>
+<p>2.cas存在的ABA问题<br>•如果一个变量 V 初次读取的时候是 A 值，并且在准备赋值的时候检查到它仍然是 A 值，那我们就能说明它的值没有被其他线程修改过了吗？很明显是不能的，因为在这段时间它的值可能被改为其他值，然后又改回 A，那 CAS 操作就会误认为它从来没有被修改过。这个问题被称为 CAS 操作的 “ABA”问题。<br>•ABA 问题的解决思路是在变量前面追加上版本号或者时间戳。JDK 1.5 以后的 AtomicStampedReference 类就是用来解决ABA问题的,其compareAndSet() 方法就是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值</p>
+<p>3.volatile<br>•volatile保证变量的可见性，当变量修饰为volatile时，该变量是共享且不稳定的，每次读取从内存中读取<br>•volatile禁止指令重排，在对变量进行读写操作时，会插入特定的内存屏障来禁止指令重排，确保不同线程操作volatile时的有序性</p>
+<p>4.juc的lock<br>Lock是接口，reentrantlock是实现类<br>reentrankReadWritelock读写锁实现了readwritelock接口<br>•lock()方法<br>获取锁 如果锁被其他线程占有 则当前线程进入阻塞状态直到锁变为可用<br>•lockInterruptibly()方法<br>与lock()方法一样是阻塞获取锁，但是在等待锁时可以响应中断请求，一旦线程被中断，会抛出InterruptedException<br>•trylock()方法<br>尝试获取锁，如果可用返回true 否则立刻返回false，也可以在添加等待时间的参数和类型<br>•unlock()方法<br> 释放锁<br>•new Condition()<br>创建一个condition对象，用于线程间的的条件等待,await() signal() signalall()类似object类的wait()notify()notifyall()<br>await()方法还可以添加时间参数和类型<br>在这段时间内如果线程没有被唤醒，那么会被返回尝试重新获取锁</p>
+<p>5.lock和synchronized的区别<br>•synchronized是Java语言的关键字Lock是一个接口。<br>•synchronized不需要用户去手动释放锁，发生异常或者线程结束时自动释放锁;Lock则必须要用户去手动释放锁，如果没有主动释放锁，就有可能导致出现死锁现象。<br>•lock可以配置公平策略,实现线程按照先后顺序获取锁。<br>•提供了trylock方法 可以试图获取锁，获取到或获取不到时，返回不同的返回值 让程序可以灵活处理。<br>•lock()和unlock()可以在不同的方法中执行,可以实现同一个线程在上一个方法中lock()在后续的其他方法中unlock(),比syncronized灵活的多。</p>
+<p>6.AQS(AbstractQueueSynchornizer)<br>•抽象队列同步器，是一个抽象类<br>•为构建锁和同步器提供了一些通用功能实现<br>•ReentrantLock,Semaphore,<br>ReentrantReadWriteLock,<br>SynchronousQueue是基于 AQS实现的</p>
+<p>7.AQS原理<br>1)如果被请求的共享资源空闲，则将请求资源的线程设置为有效工作线程，并将共享资源设置为锁定状态<br>2)如果请求的共享资源被占用，需要一套线程阻塞等待及被唤醒时锁分配的机制，该机制基于AQS的CLH锁队列实现，将暂时获取不到锁的线程加入队列<br>3)AQS使用int变量state来表示线程的同步状态，state变量使用volatile修饰<br>一个线程获取到了锁那么state变量+1，线程可以重复获取锁，state每次获取+1<br>表示重入次数，释放时需要释放state次</p>
+<p>8.CLH队列<br>1)CLH队列是一个虚拟双向队列，即不存在实例只有结点的关联关系。<br>2.)AQS将每个请求资源的线程封装成一个CLH锁队列的一个结点来实现锁的分配<br>一个结点代表一个线程，保存线程的引用(thread)、在队列在的状态waitStatus，<br>前驱结点prev、后继结点next</p>
+<p>9.synchronized使用<br>·synchronized 关键字加到 static 静态方法和 synchronized(class) 代码块上都是是给 Class 类上锁；<br>·synchronized 关键字加到实例方法上是给对象实例上锁；<br>·尽量不要使用 synchronized(String a) 因为 JVM 中，字符串常量池具有缓存功能。</p>
+<p>构造方法不能使用synchronized 因为构造方法是线程安全的</p>
+<p>10.synchronized底层原理<br>synchronized 同步语句块的实现使用的是 monitorenter 和 monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。<br>在执行monitorenter时，会尝试获取对象的锁，如果锁的计数器为 0 则表示锁可以被获取，获取后将锁计数器设为 1 也就是加 1。<br>对象锁的的拥有者线程才可以执行 monitorexit 指令来释放锁。在执行 monitorexit 指令后，将锁计数器设为 0，表明锁被释放，其他线程可以尝试获取锁。<br>synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，取得代之的确实是 ACC_SYNCHRONIZED 标识，该标识指明了该方法是一个同步方法。<br>不过两者的本质都是对对象监视器 monitor 的获取。</p>
+<p>11.jdk1.6后synchronized的优化<br>jdk1.6前synchronized为重量级锁<br>jdk1.6后synchronized引入了自旋锁、适应性自旋锁、锁消除、锁粗化、偏向锁 轻量级锁来减少锁操作的开销<br>jdk1.8后废弃偏向锁</p>
+<p>12.锁升级<br>锁升级的过程具体如下：<br>1)无锁状态：初始时，没有任何线程拥有锁，所有线程都能访问资源，但仅当资源未被修改时才能继续执行。通常使用CAS或者添加版本号操作来尝试更新资源，若失败则重试直到成功。(乐观锁)<br>2)偏向锁状态：当一个线程多次访问同步代码块且没有其他线程竞争时，JVM会认为这个锁可以被该线程”偏向”。<br>3)轻量级锁状态：如果一个线程尝试获取一个已被其他线程持有偏向锁的对象时，偏向锁会被撤销，升级为轻量级锁。<br>4)重量级锁状态：当有多个线程竞争同一个锁时，轻量级锁会升级为重量级锁。</p>
+<p>13.线程如何确定是否拿到锁?锁信息具体放在哪<br>·锁是一种同步机制，用于确保同一时间只有一个线程访问共享资源<br>使用synchronized关键字，Java每个对象都有与之关联的监视器monitor，当一个线程尝试获取某个对象的锁时，jvm会在对象头记录锁的状态和锁的持有线程id<br>·锁信息放在对象头的mark word<br>1)通过thread类的holdslock()方法<br>2)ReentrantLock的isHeldByCurrent方法来判断当前线程是否拥有锁<br>3)object类的wait()和notify方法 如果没有锁则会抛出异常IllegalMonitorStateException</p>
+<p>14.可重入锁<br>synchronized和reentranklock两者都是可重入锁(递归锁)，Lock类也是可重入锁，可重入锁指的是当前线程已经获取锁但未释放而再次获取锁时可以成功获取，如果是不可重入锁的话再次获取会造成死锁</p>
+<p>15.synchronized和reentranklock区别<br>1)锁类型<br>synchronized和reentranklock都是可重入锁和非公平锁，reentranklock通过构造方法传入参数true可以是公平锁，公平锁是指等待时间最长的线程优先获取锁<br>2)实现方式<br>synchronized依赖与jvm实现<br>reentranklock依赖于jdk实现的，即api层面，需要lock()和unlock()搭配try finally语句来完成<br>3)加锁 释放锁方式<br>synchronized是自动加锁和释放锁<br>reentranklock需要手动lock加锁和unlock释放锁并搭配try finally语句来完成<br>4)功能不同<br>reentranklock相比synchronized增加了一些功能<br>·可中断的等待锁<br> lock.lockInterruptibly<br>·超时等待锁<br>线程尝试获取锁，等待一段时间后放弃<br>·选择性通知<br>通过引入condition接口实现，多个condition绑定多个线程并通过signal()方法唤醒<br>5)修饰对象不同<br>synchronized修饰代码块 方法 类<br>reentranklock只能修饰代码块</p>
+<p>16.reentranklock引入的condition接口<br>condition接口提供了await()阻塞和signal()唤醒 signalAll()替代object类的wait() notify() notifyAll()</p>
+<p>private Lock lock &#x3D; newReentrantLock();<br>Condition condition&#x3D;lock.newCondition(); &#x2F;&#x2F;创建 Condition<br>可以创建多个condition绑定多个线程，每个线程调用所绑定的方法，condition实现阻塞和唤醒就可以控制线程的状态，进而让多个线程之间来回切换，实现多线程的通讯协作功能。<br>注意：调用Condition的await()和signal()方法，都必须在lock保护之内，就是说必须在lock.lock()和lock.unlock之间才可以使用</p>
+<p>ReentrantLock 类可以唤醒指定条件的线程，而 object 的唤醒是随机的</p>
+]]></content>
+      <tags>
+        <tag>文章</tag>
+      </tags>
   </entry>
   <entry>
-    <title>MySQL</title>
-    <url>/2024/04/05/MySQL/</url>
-    <content><![CDATA[]]></content>
+    <title>Redis</title>
+    <url>/2023/06/05/Redis/</url>
+    <content><![CDATA[<p>Redis实现分布式锁<br>•单节点加锁<br>1.通过setnx命令实现加锁 del命令解锁 但是有可能获取锁的节点宕机导致无法释放锁<br>2.通过setnx命令+设置锁过期时间解决节点宕机无法释放锁的情况，但是会出现业务流程执行时间过长而锁已经过期导致两个节点同时获取锁造成冲突<br>3.通过watch dog机制，当给节点加锁后，创建一个子线程给锁续期(redis的redission也是这种实现方案)，可以自定义续期间隔。<br>4.如果出现全局卡住的情况，可以减少看门狗续期间隔或者设置业务超时时间小于等于锁的过期时间，如果超时就中止业务<br>当有从节点的节点加锁时宕机后进行故障转移，但没有进行主从同步把锁同步过去导致锁丢失，这个时候就需要对多个节点加锁</p>
+<p>•多节点加锁-redlock<br>需要对多个节点加锁后才认为加锁成功<br>1.首先获取当前毫秒时间戳，作为获取锁的开始时间。<br>2.在所有 N 个节点中按顺序进行加锁。在每个 Redis 节点加锁时，客户端要设置一个的等待时间，并且这个等待时间要小于锁过期时间。如果节点超时未响应，则忽略该节点，向下一个节点加锁。例如，如果锁过期时间为 10 秒，则等待时间可能设置在 5 ~ 50 毫秒范围内。这可以防止客户端在尝试与已关闭的 Redis节点通信而长时间处于阻塞状态：如果一个节点不可用，我们应该尽快尝试与下一个节点通信。<br>3.客户端通过当前时间减去步骤 1 中获得的时间戳，来计算加锁所用的时间。当且仅当客户端能够在超过半数的节点中完成加锁时，并且加锁的总时间小于锁有效期，则认为获得了锁。<br>4.如果获取锁成功，则锁的有效时间 &#x3D; 锁过期时间 - 加锁经过的时间。<br>5.如果客户端由于某种原因未能获得锁（要么无法在 N&#x2F;2 + 1 个节点中完成加锁，要么有效时间为负），它将对所有节点发出解锁命令（所有节点，包括未加锁成功的节点）。<br>Redlock 的解锁很简单，对所有节点发出解锁命令（就是删除锁）即可。<br>•需要注意的是redlock并没有完全解决主节点宕机锁丢失的情况，假设有5个主节点附带5个从节点，用户1尝试获取锁 主节点1 2 3加锁成功后认为获取到锁，但是此时节点3宕机了，锁还没同步到从节点就完成了故障转移。而此时用户2尝试获取锁 主节点3 4 5加锁成功后认为获取到锁，这样用户1 2都认为获取到锁，这是不允许的<br>•解决方案:只需要对一个主节点加锁，通过wait()等待所有从节点同步主节点的锁完成后才认为获取到了锁</p>
+]]></content>
+      <tags>
+        <tag>文章</tag>
+      </tags>
   </entry>
 </search>
