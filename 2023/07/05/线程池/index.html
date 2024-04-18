@@ -69,9 +69,9 @@
 
         </div>
         <div class="content markdown">
-            <pre><code>                                                                                                                                                                                                                        ..
+            <pre><code>                                                                                                                                                                                                                        ..                 
 </code></pre>
-<p><img src="/2023/07/05/%E7%BA%BF%E7%A8%8B%E6%B1%A0/8.jpg" alt="alt text"><br>1.自动调用run()和手动调用run()<br>调用 start() 方法方可启动线程并使线程进入就绪状态，自动调用run()方法会以多线程的方式执行<br>直接执行 run() 方法的话不会以多线程的方式执行，会把 run() 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行</p>
+<p>1.自动调用run()和手动调用run()<br>调用 start() 方法方可启动线程并使线程进入就绪状态，自动调用run()方法会以多线程的方式执行<br>直接执行 run() 方法的话不会以多线程的方式执行，会把 run() 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行</p>
 <p>2.threadlocal<br>threadlocal是用于保存线程变量的副本，应用于缓存用户信息、连接。通过保证每个线程变量隔离来保证线程安全<br>内部维护一个以threadlocalmap为key，线程变量副本为value的map，key是弱引用，在gc时会被回收，而value是强引用，不会被回收，需要手动进行清理，随着value的增多可能会导致内存泄露(程序申请空间但却无法释放)<br>threadlocal只保证线程内部通信<br>inheritableThreadlocal可以保证父子线程之间的通信，父线程在子线程创建时会拷贝一份线程变量副本给子线程，但是在线程池下无法适用，因为线程池的线程可以复用，没有新建过程<br>transmittableThreadlocal可以保证线程池中无论线程是否新建都会在调用时抓取父线程的变量副本给子线程<br>threadlocal维护的map解决哈希冲突采用的是线性探测，在面对大量线程绑定数据时性能较低，因此netty引入了fast<br>Threadlocal，通过开辟更大的数组保存索引，采用空间换时间的方式，且在执行任务完成后会对value进行清理防止内存泄露</p>
 <p>3.线程池及核心参数<br>线程池就是管理一系列线程的资源池，为了减少每次获取资源的消耗，提高对资源的利用率、响应速度及线程的可管理性<br>线程池还维护一些基本统计信息，如已完成任务的数量</p>
 <p>4.线程池参数<br>corePoolSize<br>任务队列中的任务未达到队列容量时， 最大可以同时运行的线程数量<br>maximumPoolSize<br>任务队列中存放的任务达到队列容量 时，当前可以同时运行的线程数量变为最大线程数<br>keepAliveTime<br>线程池中的线程数量大于corePoolSize的时候，如果这时没有新的任务提交，多余的空闲线程不会立即销毁，而是会等待，直到等待的时间超过了keepAliveTime才会被回收销毁，线程池回收线程时，会对核心线程和非核心线 程一视同仁，直到线程池中线程的数量等于corePoolSize,回收过程才会停止<br>Unit<br>设置存活时间单位 (TimeUnit.Seconds)  分 (Time.Minutes)<br>任务队列 workQueue<br>新任务来的时候会先判断当前运行的线   程数量是否达到核心线程数，如果达到 的话，新任务就会被存放在队列中。<br>BlockingQueue<Runable> work &#x3D;new LinkedBlockingQueue&lt;&gt;()；<br>线程工厂 threadFactory<br>饱和策略 rejectExecutorHandler </Runable></p>
