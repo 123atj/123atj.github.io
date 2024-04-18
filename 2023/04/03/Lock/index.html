@@ -5,12 +5,12 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lock - Hexo</title>
+    <title>锁 - Hexo</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
     <meta name="keywords" content="Fechin,"> 
-    <meta name="description" content="1.什么是cas(比较和交换)•用于实现乐观锁•CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)•当且仅当 V 的值等于 E 时，CAS,"> 
+    <meta name="description" content="1.什么是cas(比较和交换)用于实现乐观锁CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)当且仅当 V 的值等于 E 时，CAS 通过,"> 
     <meta name="author" content="John Doe"> 
     <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
     <link rel="icon" href="/img/favicon.png"> 
@@ -18,16 +18,16 @@
     <meta name="twitter:image:src" content="https://bangdream.moe/img/ident.png"/>
     <meta name="twitter:creator" content="@yourtwitteridhere"/>
     <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="Lock - Hexo"/>
-    <meta name="twitter:description" content="1.什么是cas(比较和交换)•用于实现乐观锁•CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)•当且仅当 V 的值等于 E 时，CAS,"/>
+    <meta name="twitter:title" content="锁 - Hexo"/>
+    <meta name="twitter:description" content="1.什么是cas(比较和交换)用于实现乐观锁CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)当且仅当 V 的值等于 E 时，CAS 通过,"/>
     <meta property="og:image" content="https://bangdream.moe/img/ident.png"/>
-    <meta property="og:image:alt" content="1.什么是cas(比较和交换)•用于实现乐观锁•CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)•当且仅当 V 的值等于 E 时，CAS,"/>
+    <meta property="og:image:alt" content="1.什么是cas(比较和交换)用于实现乐观锁CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)当且仅当 V 的值等于 E 时，CAS 通过,"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="600"/>
     <meta property="og:site_name" content="Hexo"/>
     <meta property="og:type" content="object"/>
-    <meta property="og:title" content="Lock - Hexo"/>
-    <meta property="og:description" content="1.什么是cas(比较和交换)•用于实现乐观锁•CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)•当且仅当 V 的值等于 E 时，CAS,"/>
+    <meta property="og:title" content="锁 - Hexo"/>
+    <meta property="og:description" content="1.什么是cas(比较和交换)用于实现乐观锁CAS 涉及到三个操作数：V：要更新的变量值(Var)E：预期值(Expected)N：拟写入的新值(New)当且仅当 V 的值等于 E 时，CAS 通过,"/>
     
 <link rel="stylesheet" href="/css/diaspora.css">
 
@@ -45,7 +45,7 @@
     <div class="bar" style="width: 0;"></div>
     <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://example.com"></a>
     <div title="播放/暂停" class="iconfont icon-play"></div>
-    <h3 class="subtitle">Lock</h3>
+    <h3 class="subtitle">锁</h3>
     <div class="social">
         <div>
             <div class="share">
@@ -60,21 +60,21 @@
     <div class="section">
         <div class="article">
     <div class='main'>
-        <h1 class="title">Lock</h1>
+        <h1 class="title">锁</h1>
         <div class="stuff">
             <span>四月 03, 2023</span>
             
-  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E6%96%87%E7%AB%A0/" rel="tag">文章</a></li></ul>
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E9%94%81%E7%9B%B8%E5%85%B3/" rel="tag">锁相关</a></li></ul>
 
 
         </div>
         <div class="content markdown">
-            <p>1.什么是cas(比较和交换)<br>•用于实现乐观锁<br>•CAS 涉及到三个操作数：<br>V：要更新的变量值(Var)<br>E：预期值(Expected)<br>N：拟写入的新值(New)<br>•当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则是前线程放弃更新。<br>•举一个简单的例子：线程 A 要修改变量 i 的值为 6，i 原值为 1（V &#x3D; 1，E&#x3D;1，N&#x3D;6，假设不存在 ABA 问题）。<br>•i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。<br>•i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。</p>
-<p>2.cas存在的ABA问题<br>•如果一个变量 V 初次读取的时候是 A 值，并且在准备赋值的时候检查到它仍然是 A 值，那我们就能说明它的值没有被其他线程修改过了吗？很明显是不能的，因为在这段时间它的值可能被改为其他值，然后又改回 A，那 CAS 操作就会误认为它从来没有被修改过。这个问题被称为 CAS 操作的 “ABA”问题。<br>•ABA 问题的解决思路是在变量前面追加上版本号或者时间戳。JDK 1.5 以后的 AtomicStampedReference 类就是用来解决ABA问题的,其compareAndSet() 方法就是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值</p>
-<p>3.volatile<br>•volatile保证变量的可见性，当变量修饰为volatile时，该变量是共享且不稳定的，每次读取从内存中读取<br>•volatile禁止指令重排，在对变量进行读写操作时，会插入特定的内存屏障来禁止指令重排，确保不同线程操作volatile时的有序性</p>
-<p>4.juc的lock<br>Lock是接口，reentrantlock是实现类<br>reentrankReadWritelock读写锁实现了readwritelock接口<br>•lock()方法<br>获取锁 如果锁被其他线程占有 则当前线程进入阻塞状态直到锁变为可用<br>•lockInterruptibly()方法<br>与lock()方法一样是阻塞获取锁，但是在等待锁时可以响应中断请求，一旦线程被中断，会抛出InterruptedException<br>•trylock()方法<br>尝试获取锁，如果可用返回true 否则立刻返回false，也可以在添加等待时间的参数和类型<br>•unlock()方法<br> 释放锁<br>•new Condition()<br>创建一个condition对象，用于线程间的的条件等待,await() signal() signalall()类似object类的wait()notify()notifyall()<br>await()方法还可以添加时间参数和类型<br>在这段时间内如果线程没有被唤醒，那么会被返回尝试重新获取锁</p>
-<p>5.lock和synchronized的区别<br>•synchronized是Java语言的关键字Lock是一个接口。<br>•synchronized不需要用户去手动释放锁，发生异常或者线程结束时自动释放锁;Lock则必须要用户去手动释放锁，如果没有主动释放锁，就有可能导致出现死锁现象。<br>•lock可以配置公平策略,实现线程按照先后顺序获取锁。<br>•提供了trylock方法 可以试图获取锁，获取到或获取不到时，返回不同的返回值 让程序可以灵活处理。<br>•lock()和unlock()可以在不同的方法中执行,可以实现同一个线程在上一个方法中lock()在后续的其他方法中unlock(),比syncronized灵活的多。</p>
-<p>6.AQS(AbstractQueueSynchornizer)<br>•抽象队列同步器，是一个抽象类<br>•为构建锁和同步器提供了一些通用功能实现<br>•ReentrantLock,Semaphore,<br>ReentrantReadWriteLock,<br>SynchronousQueue是基于 AQS实现的</p>
+            <p>1.什么是cas(比较和交换)<br>用于实现乐观锁<br>CAS 涉及到三个操作数：<br>V：要更新的变量值(Var)<br>E：预期值(Expected)<br>N：拟写入的新值(New)<br>当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则是前线程放弃更新。<br>举一个简单的例子：线程 A 要修改变量 i 的值为 6，i 原值为 1（V &#x3D; 1，E&#x3D;1，N&#x3D;6，假设不存在 ABA 问题）。<br>i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。<br>i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。</p>
+<p>2.cas存在的ABA问题<br>如果一个变量 V 初次读取的时候是 A 值，并且在准备赋值的时候检查到它仍然是 A 值，那我们就能说明它的值没有被其他线程修改过了吗？很明显是不能的，因为在这段时间它的值可能被改为其他值，然后又改回 A，那 CAS 操作就会误认为它从来没有被修改过。这个问题被称为 CAS 操作的 “ABA”问题。<br>ABA 问题的解决思路是在变量前面追加上版本号或者时间戳。JDK 1.5 以后的 AtomicStampedReference 类就是用来解决ABA问题的,其compareAndSet() 方法就是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值</p>
+<p>3.volatile<br>volatile保证变量的可见性，当变量修饰为volatile时，该变量是共享且不稳定的，每次读取从内存中读取<br>volatile禁止指令重排，在对变量进行读写操作时，会插入特定的内存屏障来禁止指令重排，确保不同线程操作volatile时的有序性</p>
+<p>4.juc的lock<br>Lock是接口，reentrantlock是实现类<br>reentrankReadWritelock读写锁实现了readwritelock接口<br>lock()方法<br>获取锁 如果锁被其他线程占有 则当前线程进入阻塞状态直到锁变为可用<br>lockInterruptibly()方法<br>与lock()方法一样是阻塞获取锁，但是在等待锁时可以响应中断请求，一旦线程被中断，会抛出InterruptedException<br>trylock()方法<br>尝试获取锁，如果可用返回true 否则立刻返回false，也可以在添加等待时间的参数和类型<br>unlock()方法<br> 释放锁<br>new Condition()<br>创建一个condition对象，用于线程间的的条件等待,await() signal() signalall()类似object类的wait()notify()notifyall()<br>await()方法还可以添加时间参数和类型<br>在这段时间内如果线程没有被唤醒，那么会被返回尝试重新获取锁</p>
+<p>5.lock和synchronized的区别<br>synchronized是Java语言的关键字Lock是一个接口。<br>synchronized不需要用户去手动释放锁，发生异常或者线程结束时自动释放锁;Lock则必须要用户去手动释放锁，如果没有主动释放锁，就有可能导致出现死锁现象。<br>lock可以配置公平策略,实现线程按照先后顺序获取锁。<br>提供了trylock方法 可以试图获取锁，获取到或获取不到时，返回不同的返回值 让程序可以灵活处理。<br>lock()和unlock()可以在不同的方法中执行,可以实现同一个线程在上一个方法中lock()在后续的其他方法中unlock(),比syncronized灵活的多。</p>
+<p>6.AQS(AbstractQueueSynchornizer)<br>抽象队列同步器，是一个抽象类<br>为构建锁和同步器提供了一些通用功能实现<br>ReentrantLock,Semaphore,<br>ReentrantReadWriteLock,<br>SynchronousQueue是基于 AQS实现的</p>
 <p>7.AQS原理<br>1)如果被请求的共享资源空闲，则将请求资源的线程设置为有效工作线程，并将共享资源设置为锁定状态<br>2)如果请求的共享资源被占用，需要一套线程阻塞等待及被唤醒时锁分配的机制，该机制基于AQS的CLH锁队列实现，将暂时获取不到锁的线程加入队列<br>3)AQS使用int变量state来表示线程的同步状态，state变量使用volatile修饰<br>一个线程获取到了锁那么state变量+1，线程可以重复获取锁，state每次获取+1<br>表示重入次数，释放时需要释放state次</p>
 <p>8.CLH队列<br>1)CLH队列是一个虚拟双向队列，即不存在实例只有结点的关联关系。<br>2.)AQS将每个请求资源的线程封装成一个CLH锁队列的一个结点来实现锁的分配<br>一个结点代表一个线程，保存线程的引用(thread)、在队列在的状态waitStatus，<br>前驱结点prev、后继结点next</p>
 <p>9.synchronized使用<br>·synchronized 关键字加到 static 静态方法和 synchronized(class) 代码块上都是是给 Class 类上锁；<br>·synchronized 关键字加到实例方法上是给对象实例上锁；<br>·尽量不要使用 synchronized(String a) 因为 JVM 中，字符串常量池具有缓存功能。</p>

@@ -11,7 +11,7 @@
     <meta name="google" content="notranslate" />
     <meta name="keywords" content="Fechin,"> 
     <meta name="description" content="1.读写分离
-2.分库分表•https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q•https://mp.weixin.qq.com/s/x2PT6lV8,"> 
+2.分库分表https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Qhttps://mp.weixin.qq.com/s/x2PT6lV8jZ,"> 
     <meta name="author" content="John Doe"> 
     <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
     <link rel="icon" href="/img/favicon.png"> 
@@ -21,17 +21,17 @@
     <meta name="twitter:card" content="summary_large_image"/>
     <meta name="twitter:title" content="MySQL - Hexo"/>
     <meta name="twitter:description" content="1.读写分离
-2.分库分表•https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q•https://mp.weixin.qq.com/s/x2PT6lV8,"/>
+2.分库分表https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Qhttps://mp.weixin.qq.com/s/x2PT6lV8jZ,"/>
     <meta property="og:image" content="https://bangdream.moe/img/ident.png"/>
     <meta property="og:image:alt" content="1.读写分离
-2.分库分表•https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q•https://mp.weixin.qq.com/s/x2PT6lV8,"/>
+2.分库分表https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Qhttps://mp.weixin.qq.com/s/x2PT6lV8jZ,"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="600"/>
     <meta property="og:site_name" content="Hexo"/>
     <meta property="og:type" content="object"/>
     <meta property="og:title" content="MySQL - Hexo"/>
     <meta property="og:description" content="1.读写分离
-2.分库分表•https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q•https://mp.weixin.qq.com/s/x2PT6lV8,"/>
+2.分库分表https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Qhttps://mp.weixin.qq.com/s/x2PT6lV8jZ,"/>
     
 <link rel="stylesheet" href="/css/diaspora.css">
 
@@ -68,40 +68,40 @@
         <div class="stuff">
             <span>三月 05, 2023</span>
             
-  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E6%96%87%E7%AB%A0/" rel="tag">文章</a></li></ul>
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3MySQL/" rel="tag">深入了解MySQL</a></li></ul>
 
 
         </div>
         <div class="content markdown">
             <p>1.读写分离</p>
-<p>2.分库分表<br>•<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q">https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q</a><br>•<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg">https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg</a></p>
-<p>3.SQL优化<br>1)加索引+索引使用原则(哪些情况索引失效)<br>2)如果知道要返回的数据有n条 可以使用limit n<br>3)只返回需要的字段 不用select *<br>4)尽量避免使用子查询<br>5)用in 代替or<br>6)优化group by<br>•如果对排序没有要求，那么可以order by null，进行group by时会对group by的字段进行order by<br>•用where代替having，having只会在检索出所有记录才对结果集进行过滤<br>7)多次插入改为批量插入<br>8)exists适合于外表小 内表大 先查询外表，in适合外表大 内表小 先查询内表<br>select * from a where id in (select id from b) 括号是内表<br>9)尽量使用数据型字段<br>数据型字段进行匹配时只需要一次，而字符串形式字段需要对每个字符进行匹配<br>10)优化join连接<br>执行join时会对两个表进行比较<br>可以用记录数少的表作为驱动表，记录数多的作为被驱动表，左连接时对右表设置索引<br>•当不带where条件<br>a left join b  a是前驱表<br>a right join b b是前驱表<br>a inner join b 数据少的是前驱表<br>a straight_join b  左表为前驱表<br>•带where条件<br>带where条件的表是驱动表</p>
+<p>2.分库分表<br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q">https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg">https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg</a></p>
+<p>3.SQL优化<br>1)加索引+索引使用原则(哪些情况索引失效)<br>2)如果知道要返回的数据有n条 可以使用limit n<br>3)只返回需要的字段 不用select *<br>4)尽量避免使用子查询<br>5)用in 代替or<br>6)优化group by<br>如果对排序没有要求，那么可以order by null，进行group by时会对group by的字段进行order by<br>用where代替having，having只会在检索出所有记录才对结果集进行过滤<br>7)多次插入改为批量插入<br>8)exists适合于外表小 内表大 先查询外表，in适合外表大 内表小 先查询内表<br>select * from a where id in (select id from b) 括号是内表<br>9)尽量使用数据型字段<br>数据型字段进行匹配时只需要一次，而字符串形式字段需要对每个字符进行匹配<br>10)优化join连接<br>执行join时会对两个表进行比较<br>可以用记录数少的表作为驱动表，记录数多的作为被驱动表，左连接时对右表设置索引<br>当不带where条件<br>a left join b  a是前驱表<br>a right join b b是前驱表<br>a inner join b 数据少的是前驱表<br>a straight_join b  左表为前驱表<br>带where条件<br>带where条件的表是驱动表</p>
 <p>4.b+树高频率操作增删后会发生什么<br>mysql碎片 页分裂 磁盘io</p>
-<p>5.innodb和myisam区别<br>•innodb支持事务及事务四种隔离级别，myisam不支持事务 但每次操作都是原子性的<br>•innodb支持外键，myisam不支持<br>•innodb是聚簇索引，myisam是非聚簇索引<br>•innodb支持行锁和表锁，但是可能因为范围而锁表，myisam支持表锁<br>•innodb不存储总行数，myisam存储总行数<br>•innodb适合增删改查，myisam适合大量查询</p>
-<p>6.MySQL索引结构 为什么使用B+tree而不用B树<br>• B+ 树的非叶子节点不存放实际的记录<br>    数据，仅存放索引，因此数据量相同<br>    的情况下，相比存储即存索引又存记<br>    录的 B 树，B+树的非叶子节点可以存<br>    放更多的索引，因此 B+ 树可以比 B<br>    树更「矮胖」，查询底层节点的磁盘<br>    I&#x2F;O次数会更少。<br>•B+ 树有大量的冗余节点（所有非叶子<br>   节点都是冗余索引），这些冗余索引让<br>    B+ 树在插入、删除的效率都更高，比<br>    如删除根节点的时候，不会像 B 树那<br>    样会发生复杂的树的变化；<br>•B+ 树叶子节点之间用链表连接了起<br>   来，有利于范围查询，而 B 树要实现<br>   范围查询，因此只能通过树的遍历来完<br>   成范围查询，这会涉及多个节点的磁盘<br>   I&#x2F;O 操作，范围查询效率不如 B+ 树。</p>
-<p>7.索引类型<br>•主键索引 primary key<br>主键索引是唯一且非空的索引，它确保了表中数据的唯一性，并且一个表只能有一个主键索引，其他索引为非主键索引 也叫二级索引<br>•唯一索引 unique<br>唯一索引要求索引列中的值必须是唯一的，但它允许NULL值的存在。这种索引通常用于确保数据列的唯一性<br>•普通索引<br>允许在定义索引的列中插入重复值和NULL值。一个表可以有多个普通索引<br>•全文索引 fulltext<br>支持全文搜索，它可以在文本类型的列上创建，以便快速检索文章或报告中的关键词<br>•单列索引<br>单列索引是只在单个列上创建的索引，它可以提高基于该列的查询效率<br>•多列索引(组合索引)<br>多列索引又称为复合索引，它是在多个列上创建的索引，可以提高涉及这些列的查询效率<br>•聚簇索引<br>聚簇索引决定了数据在磁盘上的物理存储顺序，是一种数据存储方式。通常与主键索引一起使用，一般建表会用一个自增主键做聚簇索引，没有的话MySQL会默认创建</p>
-<p>8.聚簇索引和非聚簇索引和覆盖索引<br>•聚簇索引就是叶子节点存储索引和数<br>   据，InnoDB就属于聚簇索引<br>•非聚簇索引就是叶子节点存储索引和磁<br>   盘地址，通过磁盘地址找到存储的数据<br>   需要回表操作所以效率比聚簇索引慢<br>   MylSAM就属于非聚簇索引<br>•覆盖索引就是包含查询所有字段的索引</p>
+<p>5.innodb和myisam区别<br>innodb支持事务及事务四种隔离级别，myisam不支持事务 但每次操作都是原子性的<br>innodb支持外键，myisam不支持<br>innodb是聚簇索引，myisam是非聚簇索引<br>innodb支持行锁和表锁，但是可能因为范围而锁表，myisam支持表锁<br>innodb不存储总行数，myisam存储总行数<br>innodb适合增删改查，myisam适合大量查询</p>
+<p>6.MySQL索引结构 为什么使用B+tree而不用B树<br> B+ 树的非叶子节点不存放实际的记录<br>    数据，仅存放索引，因此数据量相同<br>    的情况下，相比存储即存索引又存记<br>    录的 B 树，B+树的非叶子节点可以存<br>    放更多的索引，因此 B+ 树可以比 B<br>    树更「矮胖」，查询底层节点的磁盘<br>    I&#x2F;O次数会更少。<br>B+ 树有大量的冗余节点（所有非叶子<br>   节点都是冗余索引），这些冗余索引让<br>    B+ 树在插入、删除的效率都更高，比<br>    如删除根节点的时候，不会像 B 树那<br>    样会发生复杂的树的变化；<br>B+ 树叶子节点之间用链表连接了起<br>   来，有利于范围查询，而 B 树要实现<br>   范围查询，因此只能通过树的遍历来完<br>   成范围查询，这会涉及多个节点的磁盘<br>   I&#x2F;O 操作，范围查询效率不如 B+ 树。</p>
+<p>7.索引类型<br>主键索引 primary key<br>主键索引是唯一且非空的索引，它确保了表中数据的唯一性，并且一个表只能有一个主键索引，其他索引为非主键索引 也叫二级索引<br>唯一索引 unique<br>唯一索引要求索引列中的值必须是唯一的，但它允许NULL值的存在。这种索引通常用于确保数据列的唯一性<br>普通索引<br>允许在定义索引的列中插入重复值和NULL值。一个表可以有多个普通索引<br>全文索引 fulltext<br>支持全文搜索，它可以在文本类型的列上创建，以便快速检索文章或报告中的关键词<br>单列索引<br>单列索引是只在单个列上创建的索引，它可以提高基于该列的查询效率<br>多列索引(组合索引)<br>多列索引又称为复合索引，它是在多个列上创建的索引，可以提高涉及这些列的查询效率<br>聚簇索引<br>聚簇索引决定了数据在磁盘上的物理存储顺序，是一种数据存储方式。通常与主键索引一起使用，一般建表会用一个自增主键做聚簇索引，没有的话MySQL会默认创建</p>
+<p>8.聚簇索引和非聚簇索引和覆盖索引<br>聚簇索引就是叶子节点存储索引和数<br>   据，InnoDB就属于聚簇索引<br>非聚簇索引就是叶子节点存储索引和磁<br>   盘地址，通过磁盘地址找到存储的数据<br>   需要回表操作所以效率比聚簇索引慢<br>   MylSAM就属于非聚簇索引<br>覆盖索引就是包含查询所有字段的索引</p>
 <p>9.建立索引的方式<br>1)alter table 表名 add 索引类型(字段)<br>2)create 索引类型 索引名 on 表名(字段)<br>3)创建表时直接添加<br>create table students(<br>    id int primary key，<br>    name varchar(20)，<br>索引类型 idx_students_name (name)<br>)</p>
-<p>10.where和having的区别<br>•where在数据分组和聚合之前对单行记录进行过滤<br>•where不能直接使用聚合函数(sum avg)<br>•having则在数据分组和聚合之后对分组结果进行过滤，且可以使用聚合函数</p>
+<p>10.where和having的区别<br>where在数据分组和聚合之前对单行记录进行过滤<br>where不能直接使用聚合函数(sum avg)<br>having则在数据分组和聚合之后对分组结果进行过滤，且可以使用聚合函数</p>
 <p>11.创建索引的字段<br>1)主键<br>2)经常出现在where字句的字段，即常被作为查询条件 分组条件 排序条件的字段<br>3)针对数据量大，且查询比较频繁的表建立索引<br>4)选择区分度高的字段，即该字段在表中的值大多是不相同的<br>5)选择小字段<br>6)经常与其他表进行连表查询，在连接字段上可以建立索引<br>7)如果是字符串类型的字段，字段的长度较长，可以针对字符串的特点，建立前缀索引<br>为student表的name字段创建长度为3的前缀索引<br>create index idx_student_name on<br>student(name(3)) </p>
 <p>12.如何确定语句是否走索引<br>通过使用explain命令分析执行计划，查看type列是否为all，all代表全表扫描，查看key列是否为null 为null代表没有走索引</p>
 <p>6.建立联合索引 字段顺序需要注意<br>1)最左匹配原则 最常用的字段放在最左边<br>2)等值条件字段放左边<br>3)区分度高的字段放左边，即在表中的值大多不同的字段</p>
 <p>13.b+tree索引和哈希索引</p>
-<p>14.建立索引原则<br>•选择字段不为null，区分度高的字段，即在表中的值大多不同的字段<br>•被频繁查询的字段<br>•作为查询条件 分组条件 排序条件的字段<br>•频繁用于连接的字段<br>•尽量建立联合索引<br>•尽量扩展索引而不创建新的索引</p>
-<p>15.索引失效情况<br>•不遵循最左匹配原则<br>•组合索引中间没有用到<br>•在索引列上使用函数 表达式 类型转换<br>•以%开头的like查找<br>•索引字段使用 is null 或者 is not null<br>•索引字段用!&#x3D;或&lt; &gt; 或 not in<br>•使用select *，使用select * 不会直接导致索引失效,如果不走索引就是 where查询范围过大 导致MySQL 最优选择全表扫描了 并不是Select * 的问题<br>•条件查询使用or，且or的前后条件有一个没有用到索引列<br>•in的取值范围太大<br>•发生隐式转换 当操作符两边的数据类型不同时会进行类型转换<br>字符串转换为数值类型时，非数字开头的字符串会转化为0，以数字开头的字符串会截取从第一个字符到第一个非数字内容为止的值为转化结果<br>•如果需要进行 join 的字段两表的字段类型要相同</p>
-<p>16.mvcc<br>•多版本并发控制，用于保证多个事务同时读写数据库时不需要加锁来保证数据的一致性和隔离性<br>•在每行记录后面保存三个隐藏的列，分别为行标识、事务id、回滚指针。实际为两个系统版本号。<br>•当一个事务要对数据库进行修改时，mvcc会为当前事务创建一个数据快照而不是直接修改数据<br>•当一个事务对数据库进行读取时会使用快照读，读取数据会根据对应的数据版本进行查询，如果读取的数据有多个版本号，那么会找到不晚于开始时间的最新版本。快照读不会受到其他修复事务影响<br>•当一个事务对数据库进行修改时会生成新的数据版本，并将修改的数据写入。为修改的数据创建一个新的版本号并将修改后的数据写入新版本，原始版本数据仍然存在，不影响其他事务读取<br>•事务提交和回滚<br>事务提交将数据修改为最新版本并对其他事务可见<br>事务回滚将对数据的修改撤销并对其他事务不可见<br>•版本回收<br>mvcc会定期对数据版本进行回收，删除不需要的旧版本数据<br>•mvcc只用于可重复读和读已提交<br>MVCC 通过创建数据的多个版本和使用快照读取来实现并发控制。读操作使用旧版本数据的快照，写操作创建新版本，并确保原始版本仍然可用。这样，不同的事务可以在一定程度上并发执行，而不会相互干扰，从而提高了数据库的并发性能和数据一致性。<br>•总结:InnoDB的	MVCC	是通过	read	view	和版本链实现的，版本链保存有历史版本记	录，通过	read view	判断当前版本的数据是否可见，如果不可见，再从版本链中找到上一个版本，继续进行判断，直到找到一个可见的版本。</p>
-<p>16.数据库数据隐藏的列<br>•行标识 row_id<br>如果在表中存在主键或非空唯一索引，并且只由整数类型组成，那么row_id直接引用主键或非空唯一索引的值，可以使用select _rowid查询<br>如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引<br>•事务id trx_id<br>表示最后一次插入或更新该行的事务 id<br>•回滚指针  roll_ptr<br>回滚指针，指向该行的 undo log 。如果该行未被更新，则为空</p>
-<p>17.隔离级别<br>•读未提交(脏读 不可重复读 幻读 )<br>允许读取尚未提交的数据变更<br>•读已提交(不可重复读 幻读)<br>允许读取并发事务已经提交的数据<br>•可重复读(幻读)<br>对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改<br>•可串行化<br>最高的隔离级别，完全服从 ACID 的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，所有读写操作都需要</p>
-<p>•丢失修改（脏写）<br>在一个事务读取一个数据时，另外一个事务也访问了该数据，那么在第一个事务中修改了这个数据后，第二个事务也修改了这个数据。这样第一个事务内的修改结果就被丢失，因此称为丢失修改</p>
-<p>•幻读<br>幻读的重点在于记录新增比如多次执行同一条查询语句（DQL）时，发现查到的记录增加了</p>
-<p>•不可重复读<br>不可重复读的重点是内容修改或者记录减少比如多次读取一条记录发现其中某些记录的值被修改</p>
-<p>•脏读<br>读取到没有被提交的数据</p>
-<p>18.事务的特点<br>•原子性<br> 事务的操作要么都成功，要么都失败<br>•一致性<br>数据在事务的开始到结束的过程中要保持一致<br>•隔离性<br>每个事务之间相互隔离<br>•持久性<br>事务完成后数据会被持久化</p>
+<p>14.建立索引原则<br>选择字段不为null，区分度高的字段，即在表中的值大多不同的字段<br>被频繁查询的字段<br>作为查询条件 分组条件 排序条件的字段<br>频繁用于连接的字段<br>尽量建立联合索引<br>尽量扩展索引而不创建新的索引</p>
+<p>15.索引失效情况<br>不遵循最左匹配原则<br>组合索引中间没有用到<br>在索引列上使用函数 表达式 类型转换<br>以%开头的like查找<br>索引字段使用 is null 或者 is not null<br>索引字段用!&#x3D;或&lt; &gt; 或 not in<br>使用select *，使用select * 不会直接导致索引失效,如果不走索引就是 where查询范围过大 导致MySQL 最优选择全表扫描了 并不是Select * 的问题<br>条件查询使用or，且or的前后条件有一个没有用到索引列<br>in的取值范围太大<br>发生隐式转换 当操作符两边的数据类型不同时会进行类型转换<br>字符串转换为数值类型时，非数字开头的字符串会转化为0，以数字开头的字符串会截取从第一个字符到第一个非数字内容为止的值为转化结果<br>如果需要进行 join 的字段两表的字段类型要相同</p>
+<p>16.mvcc<br>多版本并发控制，用于保证多个事务同时读写数据库时不需要加锁来保证数据的一致性和隔离性<br>在每行记录后面保存三个隐藏的列，分别为行标识、事务id、回滚指针。实际为两个系统版本号。<br>当一个事务要对数据库进行修改时，mvcc会为当前事务创建一个数据快照而不是直接修改数据<br>当一个事务对数据库进行读取时会使用快照读，读取数据会根据对应的数据版本进行查询，如果读取的数据有多个版本号，那么会找到不晚于开始时间的最新版本。快照读不会受到其他修复事务影响<br>当一个事务对数据库进行修改时会生成新的数据版本，并将修改的数据写入。为修改的数据创建一个新的版本号并将修改后的数据写入新版本，原始版本数据仍然存在，不影响其他事务读取<br>事务提交和回滚<br>事务提交将数据修改为最新版本并对其他事务可见<br>事务回滚将对数据的修改撤销并对其他事务不可见<br>版本回收<br>mvcc会定期对数据版本进行回收，删除不需要的旧版本数据<br>mvcc只用于可重复读和读已提交<br>MVCC 通过创建数据的多个版本和使用快照读取来实现并发控制。读操作使用旧版本数据的快照，写操作创建新版本，并确保原始版本仍然可用。这样，不同的事务可以在一定程度上并发执行，而不会相互干扰，从而提高了数据库的并发性能和数据一致性。<br>总结:InnoDB的	MVCC	是通过	read	view	和版本链实现的，版本链保存有历史版本记	录，通过	read view	判断当前版本的数据是否可见，如果不可见，再从版本链中找到上一个版本，继续进行判断，直到找到一个可见的版本。</p>
+<p>16.数据库数据隐藏的列<br>行标识 row_id<br>如果在表中存在主键或非空唯一索引，并且只由整数类型组成，那么row_id直接引用主键或非空唯一索引的值，可以使用select _rowid查询<br>如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引<br>事务id trx_id<br>表示最后一次插入或更新该行的事务 id<br>回滚指针  roll_ptr<br>回滚指针，指向该行的 undo log 。如果该行未被更新，则为空</p>
+<p>17.隔离级别<br>读未提交(脏读 不可重复读 幻读 )<br>允许读取尚未提交的数据变更<br>读已提交(不可重复读 幻读)<br>允许读取并发事务已经提交的数据<br>可重复读(幻读)<br>对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改<br>可串行化<br>最高的隔离级别，完全服从 ACID 的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，所有读写操作都需要</p>
+<p>丢失修改（脏写）<br>在一个事务读取一个数据时，另外一个事务也访问了该数据，那么在第一个事务中修改了这个数据后，第二个事务也修改了这个数据。这样第一个事务内的修改结果就被丢失，因此称为丢失修改</p>
+<p>幻读<br>幻读的重点在于记录新增比如多次执行同一条查询语句（DQL）时，发现查到的记录增加了</p>
+<p>不可重复读<br>不可重复读的重点是内容修改或者记录减少比如多次读取一条记录发现其中某些记录的值被修改</p>
+<p>脏读<br>读取到没有被提交的数据</p>
+<p>18.事务的特点<br>原子性<br> 事务的操作要么都成功，要么都失败<br>一致性<br>数据在事务的开始到结束的过程中要保持一致<br>隔离性<br>每个事务之间相互隔离<br>持久性<br>事务完成后数据会被持久化</p>
 <p>19.分布式事务</p>
 <p>20.数据库表设计</p>
-<p>21.MySQL底层使用B+树而不用B树<br>1)b+tree特点<br>•高度平衡<br>•范围查询友好<br>•大容量索引<br>•聚簇索引与非聚簇索引<br>2)B+树与 B 树相比，具备更少的 IO 次数、更稳定的查询效率和更适于范围查询这些优势。<br>•B+树中间节点不存数据只存索引。而B树中间节点存储数据<br>•B+树每次需查询到叶子节点，性能稳定，而B树查找只需要找到匹配的元素，最好情况下找到根结点，最坏找到叶子节点，性能不稳定<br>•B+树范围查询优势明显。首先通过二分查找，找到范围下限，然后同过叶子结点的链表顺序遍历，直至找到上限即可。<br>B树首先二分查找到范围下限，在不断通过中序遍历，直到查找到范围的上限才行。</p>
+<p>21.MySQL底层使用B+树而不用B树<br>1)b+tree特点<br>高度平衡<br>范围查询友好<br>大容量索引<br>聚簇索引与非聚簇索引<br>2)B+树与 B 树相比，具备更少的 IO 次数、更稳定的查询效率和更适于范围查询这些优势。<br>B+树中间节点不存数据只存索引。而B树中间节点存储数据<br>B+树每次需查询到叶子节点，性能稳定，而B树查找只需要找到匹配的元素，最好情况下找到根结点，最坏找到叶子节点，性能不稳定<br>B+树范围查询优势明显。首先通过二分查找，找到范围下限，然后同过叶子结点的链表顺序遍历，直至找到上限即可。<br>B树首先二分查找到范围下限，在不断通过中序遍历，直到查找到范围的上限才行。</p>
 <p>22.b+tree的查找过程<br>起始于根节点，自顶向下遍历树，在节点内部典型的使用是二分查找来确定这个位置。</p>
-<p>23.innodb存储引擎结果<br>• 表空间<br>表空间：所有数据都存在表空间中，表空间分系统表空间和独立表空间。<br>•段<br>表空间由段组成，一张表通常有数据段<br>回滚段 索引段等，每个段由N个区和32个零散的页组成<br>•区<br>由连续的页组成，每个区固定大小为1MB<br>•页<br>一个区由64个连续页组成，页默认大小16KB</p>
+<p>23.innodb存储引擎结果<br> 表空间<br>表空间：所有数据都存在表空间中，表空间分系统表空间和独立表空间。<br>段<br>表空间由段组成，一张表通常有数据段<br>回滚段 索引段等，每个段由N个区和32个零散的页组成<br>区<br>由连续的页组成，每个区固定大小为1MB<br>页<br>一个区由64个连续页组成，页默认大小16KB</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
