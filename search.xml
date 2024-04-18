@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>HashMap</title>
+    <url>/2022/04/05/HashMap/</url>
+    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
+</code></pre>
+<p>1.什么是哈希?什么是哈希表?<br>1)哈希是一种能够将输入内容通过特定的散列算法转换成固定长度的哈希值，作为数据的唯一标识<br>2)哈希是不可逆的，因此可以用于密码存储 数据完整性校验 md5 sha1 sha256<br>3)哈希表是一种通过key访问内存存储位置的数据结构，通过哈希函数计算key的哈希值将数据映射到对应哈希值的位置</p>
+<p>2.为什么hashmap使用红黑树<br>当链表长度过长时会导致查询效率降低因此jdk1.8引入了红黑树<br>红黑树的特点<br>1)红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2)与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3)解决链表长度过长</p>
+<p>3.hashmap为什么不是线程安全jdk1.7hashmap扩容可能死循环及数据丢失<br>jdk1.8扩容可能数据丢失<br>1)扩容操作的并发问题<br>当进行扩容操作时，会重新计算哈希并定位新的位置，多个线程进行修改操作会导致一些线程在旧表执行，一些线程在新表执行，在旧表执行的线程可能会导致数据丢失或覆盖已经迁移的数据<br>2)哈希冲突导致的数据覆盖问题<br>两个线程进行put操作并计算出相同的hash值发生哈希冲突，一个线程判断哈希冲突被挂起，另一个线程执行插入操作，当第一个线程恢复执行时进行插入操作覆盖原有的数据<br>3)原子性和内存可见性<br>hashmap操作不是原子性的，意味着操作可以被打断导致数据不一致。<br>由于线程缓存可见性问题，一个线程对hashmap的修改可能不会立即对其他线程可见</p>
+<p>4.如何解决hashmap的线程安全问题<br>1)使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2)加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3)使用concurrenthashmap<br>4)volatile关键字保证内存可见性</p>
+<p>5.concurrenthashmap如何实现size()<br>size()方法基于基于baseCount和CountCell数组，CountCell数组类似LongAdder动态扩展数组<br>size()具体流程<br>1)读取baseCount的值<br>2)检查并累加所有CountCell的计数值<br>3)两次遍历策略<br>第一次遍历统计baseCount和CountCell的总和，第二次遍历再次统计并对比两次遍历所有CountCell的修改次数，如果两次的修改次数相同则认为统计结果有效并返回该结果，否则重新统计</p>
+<p>6.hashmap读写 containskey效率<br>读&#x2F;写 理想情况为O(1) 在保证链表长度为1的情况下可以是O(1)即无哈希冲突 最差O(N)<br>containskey  O(1)</p>
+<p>7.hashmap扩容为什么会死循环<br>jdk1.7采用的是头插法，扩容可能成链表环导致死循环<br>而jdk1.8采用尾插法<br>多个线程同时对链表进行操作，头插法可能会导致链表中的节点指向错误的位置，从而形成一个环形链表，进而使得查询元素的操作陷入死循环无法结束</p>
+<p>8.hashmap如何确定key的位置<br>先使用hashcode()求出key的哈希值<br>使用扰动函数计算哈希值<br>哈希值 &amp; (n-1) n是数组长度</p>
+<p>扰动函数在jdk1.8<br>hash ^ (hash &gt;&gt;&gt; 16)<br>在jdk1.7<br>hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
+<p>9.解决哈希冲突的方法<br>1.开放地址法:分为线性探测 和二次探测 和双重散列<br>找到空的数组下标<br>2.再哈希<br>使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)<br>如果哈希值一样，存储在数组的下标一样并链表的形式存储<br>4.建立公共溢出区</p>
+<p>10.hashmap红黑树会无限高吗<br>红黑树是自平衡二叉查找树，保证根结点到叶子结点的最长路径不超过最短路径的两倍从而维护树的平衡 当红黑树的高度超过8时，会进行旋转</p>
+<p>11.二叉查找树 红黑树 avl树的区别<br>二叉查找树是最基本的查找树结构，红黑树和avl树在二叉查找树的基础上为了提高查询效率进行优化<br>红黑树是自平衡二叉查找树，平衡是弱平衡，通过任何路径都不超过其他路径的两倍来保持树的平衡，旋转次数少，旋转分为左旋和右旋，适合插入 删除频繁的场景<br>avl树是严格平衡二叉查找树，要求任何节点的两个子树高度最大差为1保持平衡<br>比红黑树在插值上更加高效，但插入和删除会有更多旋转，增加维护平衡成本</p>
+]]></content>
+      <tags>
+        <tag>深入了解HashMap</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>锁</title>
     <url>/2023/04/03/Lock/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
@@ -27,6 +49,64 @@
 ]]></content>
       <tags>
         <tag>锁相关</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>JVM</title>
+    <url>/2023/04/05/JVM/</url>
+    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
+</code></pre>
+<p>1.jvm参数设置<br>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
+<p>2.new对象做了什么&#x2F;对象创建过程<br>类加载检测<br>jvm遇到new指令后，会检查该对象的符号引用是否在常量池中，如果存在那么会进行类加载检测，否则进行类加载过程<br>分配内存<br>分配内存的方法有指针碰撞 空闲列表，jvm一般采用cas+失败重试进行内存分配为了避免并发分配竞争问题，每个线程在JVM启动时都会在Eden区分配一块TLAB内存(线程本地分配缓冲)用于分配内存，如果TLAB内存不足只能在Eden区进行分配<br>初始化<br>给对象分配空间后，对空间进行赋值默认值<br>设置对象头<br>每个对象都有对象头、实例数据和对齐填充。对象头包括mardword、klass pointer、数组长度<br>执行<init>方法<br>设置完对象头后执行init方法按照预期值对内存空间进行初始化，然后执行构造方法</init></p>
+<p>3.类的实例化顺序<br>静态变量→静态代码块→普通变量→普通代码块→构造方法<br>静态变量和静态代码块<br>在类加载到jvm初始化一次<br>普通变量和普通代码块<br>每次类对象实例化时初始化</p>
+<p>4.什么是栈上分配<br>一般new出来的对象都是放在堆上的，当对象没有被引用时会被GC回收，当对象创建过多时，GC会有一定压力，所以为了避免临时对象直接分配到堆上，JVM可以通过逃逸分析，将不被外部引用的对象不进行创建，采用标量替换的方式直接分配到栈上，这样可以随着栈帧的出栈而销毁，减轻GC压力<br>逃逸分析 可以理解为 对象被return就代表逃逸<br>标量替换 可以理解为 将对象的成员变量拆出来，标识是哪个对象的</p>
+<p>5.常量池的分类<br>class常量池<br>存放编译期间的字面量和符号引用<br>运行时常量池<br>在jvm运行期间，会将字符串常量池的静态数据加载到方法区<br>全局常量池<br>存放字符串的引用值<br>字符串常量池<br>用于缓存字符串<br>1)当以字符串常量的方式创建字符串，会先从常量池中查找，如果找到就返回其引用，否则在常量池中创建并返回引用<br>2)当以new的方式创建字符串，无论常量池中是否存在字符串引用，都会在堆内存中创建一个字符串对象并返回引用</p>
+<p>6.判断垃圾算法<br>引用计数法<br>每个对象维护一个计数器 被引用+1 不被引用-1 但是无法解决循环依赖问题<br>可达性分析法<br>从gc root出发，通过引用对象图，标记出所有非垃圾对象，清理未被标记的对象</p>
+<p>7.哪些对象可以作为gc root<br>虚拟机栈引用的对象<br>静态属性引用的对象<br>常量引用的对象<br>本地方法栈中jni引用的对象<br>持有同步锁的对象，spring bean</p>
+<p>8.jvm组成部分<br>两个系统<br>类加载子系统-将字节码文件加载到jvm内存中<br>字节码执行引擎-负责gc 执行字节码文件指令和修改程序计数器的值<br>两个组件<br>运行时数据区(即jvm内存)<br>本地接口(JNI-Java native interface)</p>
+<p>9.jvm类加载过程<br>分为7个阶段<br>加载 链接(验证 准备 解析) 初始化 使用 卸载<br>加载<br>将字节码文件加载到运行时的数据区的方法区(即jvm内存的方法区)<br>验证<br>对字节码进行校验，包括文件格式验证、元数据验证、字节码验证和符号引用验证<br>如魔数、主次版本号<br>准备<br>将类中的静态变量分配空间并设置默认值<br>解析<br>将符号引用变为直接引用<br>符号引用在字节码文件中的以字符串的形式表示的<br>直接引用是指向内存的实际对象或函数的指针<br>初始化<br>执行类构造器方法，执行完成后类被初始化为可执行的状态，类的静态变量被正确赋值及静态代码块执行完毕</p>
+<p>10.哪些情况下类被卸载<br>垃圾收集时，如果类的Class对象没有被任何引用指向，即无法通过反射访问该类。则类会被垃圾收集器回收，导致类被卸载<br>程序退出时，Java虚拟机会退出卸载所有类<br>当类的加载器被回收<br>当前类的所有对象实例都被回收</p>
+<p>11.Java oom类型<br>java heap space对象过多，过大或堆内存泄露导致的内存不足<br>unable to create native thread 创建过多线程<br>PermGen space &#x2F; Metaspace 存储类的字节码和字符串常量池的永生 代内存满了 &#x2F; 类数量加载过多或类信息  占用空间过多<br>Direct buffer memory 使用Java的nio(非阻塞I&#x2F;O)直接内存并  且超过–Xx:MaxDirectMemory参数设定的最大值<br>gc overhead limit exceeded jvm花费大量时间进行垃圾回收且回收  空间小  垃圾回收频繁 无法解决内存问题</p>
+<p>stackoverflow栈溢出是线程栈空间不足不会导致oom，发生在函数递归调用过深或局部变量占用太大超过栈的容量限制</p>
+<p>12.gc(garbage collection)分为<br>新生代gcminor gc<br>   新创建的对象加入时，新时代空间不足 触发新时代gc<br>老年代gcmajor gc<br>   经过gc后仍存活的对象进入老年代导致老年代空间不足触发老年代gc<br>全局gcfull gc<br>   永久代空间不足 手动触发gc</p>
+<p>13.jvm区域划分<br>堆 元空间(方法区) 本地方法区 虚拟机栈 程序计数器<br>堆分为新时代和老年代<br>线程共享的区域:堆 元空间<br>线程私有的区域:本地方法区 虚拟机栈 程序计数器<br>堆分为新生代和老年代，新手代分为 eden(伊甸区)和s0 s1(两个存活区)，占比为8:1:1</p>
+<p>14.垃圾回收器有哪些<br>1)单线程&#x2F;串行回收器<br>serial回收器<br>serial old回收器<br>2)多线程&#x2F;并行回收器<br>parallel<br>parallel old<br>parnew与cms搭配使用<br>3)多线程&#x2F;响应时间优先的并发回收器<br>cms(concurrent mark sweep)<br>g1(garbage–first)</p>
+<p>15.cms和g1特点<br>CMS特点(jdk1.5)<br>并发收集 低停顿<br>避免老年代出现长时间卡顿(stw)<br>工作流程<br>   初始标记 并发标记 并发预清理<br>   重新标记 并发清除 并发重置<br>   初始标记和重新标记需要stw<br>无法清理浮动垃圾<br>   并发标记和并发清理阶段，用户线程继续运行会有新的垃圾对象产生，这一部分垃圾对象是在标记过程结束后产生的CMS无法在当次收集中处理掉它们，需要留到下一次垃圾收集时再清理掉,这一部分垃圾称为“浮动垃圾”<br>使用标记清除算法，会产生大量空间碎片<br>并发模式失败(concurrent mode failure)<br> 1)老年代空间不足<br>   cms在并发标记过程在发现大量对象需要晋升到老年代且老年代空间不足以容纳这些对象时会触发cmf并发阶段未完成<br> 2)cms没能在并发阶段内完成预取工作，   为了防止oom 需要进行full gc会stw， 无法进行并行清理<br> 3)由于在垃圾回收阶段用户线程还在并发 运行，那就还需要预留足够的内存空间 提供给用户线程使用，因此CMS不能像其他回收器那样等到老年代几乎完全被填满了再进<br>   行回收，必须预留一部分空间供并发回收时的程序运行使用。默 认情况下，当老年代使用了 92% 的空间后就会触发 CMS 垃圾回收，这个值通过-XXCMSInitiating<br>   OccupancyFraction 参数来设置。</p>
+<p>16.cms在并发标记阶段的多标和漏标<br>标的是非垃圾对象<br>多标(并发标记阶段)<br>多标 就是本应该是垃圾对象，但是由于用户线程还在运行，对象间的引用关系可能发生变化，所以没来及去清除存活标记<br>漏标(并发标记 重新标记阶段)<br>漏标就是新来的对象引用了GC Root链上的对象，但是由于用户线程还在运行，没来得及标记为非垃圾，被GC误清除</p>
+<p>17.cms产生的内存碎片<br>使用参数-xx:+UseCMSCompactAtFullCollection，让cms在执行full gc   时进行内存碎片整理<br>设置-xx:CMSFullGCsBeforeCompaction&#x3D;n 参数让cms在执行n次  不带压缩的gc后进行一次带压缩整理的full gc<br>当内存碎片严重到cms无法管理时，采用serial old执行标记 整理算法</p>
+<p>18.解决cms漏标问题<br>三色标记法<br>写屏障<br>增加重新标记阶段的暂停时间<br>调整cms触发的阈值</p>
+<p>19.cms三色标记<br>黑色<br>所有引用扫描过<br>白色<br>未被访问过<br>灰色<br>访问过，但至少一个对象的引用没有被扫描过</p>
+<p>20.cms三色标记法的作用<br>用来解决漏标问题<br>分为增量更新和原始快照<br>增量更新是通过记录下黑色对象新增的白色对象引用关系，将黑色对象回退到灰色对象，重新深度扫描一次，一般用于重新标记阶段<br>原始快照是通过记录下灰色对象删除的白色对象的引用关系，在后续的并发标记或重新标记阶段可能会被重新考虑，以灰色对象为根简单扫描一下确保不会漏标，将白色对象标记为黑色对象，当作浮动垃圾处理，等待下一轮Gc</p>
+<p>21.G1特点(jdk1.7)<br>分代收集<br>   将堆划分成多个大小相等的独立 Regi<br>   on区域(2048个)<br>并行与并发<br> 使用多线程进行垃圾回收并尽量减少stw<br> 的停顿时间，其他用户线程进行运行<br>空间整合<br>   从整体看，基于标记-整理算法<br>   从局部看，基于标记－复制算法<br>可预测的停顿<br>   G1跟踪各个Region的回收获得的空间<br>   大小和回收所需要的经验值，维护一个<br>   优先列表<br>运行流程<br>   初始标记 并发标记 最终标记 筛选回收<br>   初始标记 和 CMS的初始标记 一样<br>   并发标记 和 CMS的并发标记 一样<br>   最终标记 和 CMS的重新标记 一样，但<br>   是这里对于 漏标 的对象采用 原始快照<br>   的方式进行处理<br>使用humogous区存放大对象<br>如果humogous存放不下那么会使用多个region区进行存放<br>筛选回收<br>stw时对未标记的region进行清理，根据每个region区域回收价值和成本进行排序<br>根据用户预期停顿时间来选择合适的回收方式，不会回收所有垃圾对象，考虑到预期停顿时间，只会回收接近预取停顿时间的region，其余region等待下一次gc</p>
+<p>22.jdk8之后出现的gc<br>epsilon(jdk11)<br>1)它是一个“被动”的收集器，不会执行任何实际的垃圾收集工作，而是当应用程序请求进行垃圾收集时，直接退出程序。它只负责分配内存，并不回收内存。当堆内存耗尽之后，JVM 直接因为 OutOf<br>Memory而终止Epsilon的主要用途是用于性能测试和故障排查，帮助开发者确定应用程序的垃圾收集开销是否过大。<br>2)适合运行时间很短的程序，比如命令行程序，定期执行的简单任务<br>3)对延迟和吞吐量很敏感的程序。回收垃圾的操作会带来延迟，Epsilon 完全避免了这些延迟<br>zgc(jdk11)<br>ZGC（Z Garbage Collector）是一款低延迟垃圾收集器，其设计目标是实现可预测的、小于10毫秒的停顿时间。ZGC采用了基于颜色的指针追踪技术，以及并发处理等方式，从而实现了低延迟和高吞吐量的平衡。</p>
+<p>23.垃圾收集器的核心指标，设计者追求什么<br>吞吐量<br>暂停时间<br>内存占用<br>追求在延迟可控的情况下，获得尽可能高的吞吐量，追求全功能收集器</p>
+<p>25.什么是STW<br>STW 就是stop the world，会暂停所有用户线程来进行GC，对于暂停的时间与垃圾收集器有关<br>年轻代的Minor GC(Young GC) 几乎无感觉<br>老年代的Full GC可能会感觉到卡顿一下</p>
+<p>26.为什么要进行STW<br>STW 主要是为了更好的维护引用对象图来进行GC，如果不进行STW，用户线程还在进行着，可能一些对象还没来得及被标记就被GC了，这个是比较严重的问题</p>
+<p>27.区分并发与并行的区别：<br>并行清理只是一个概念，是指多个垃圾<br>   回收线程同时运行，来清理垃圾，此时<br>   没有任何用户线程处于工作状态<br>而并发清理是只有一个垃圾回收线程运<br>   行，其他用户线程依然处于工作状态，<br>   并会源源不断地产生浮动垃圾，CMS<br>   中的就是并发清理</p>
+<p>28.jvm调优</p>
+]]></content>
+      <tags>
+        <tag>JVM详谈</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>最短路</title>
+    <url>/2022/01/05/%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
+</code></pre>
+<p>单源最短路-堆优化dijkstra<br>arrays.fill(he，-1);<br>void add(int a, int b, int c) {<br>    e[idx] &#x3D; b;<br>    ne[idx] &#x3D; he[a];<br>    he[a] &#x3D; idx;<br>    w[idx] &#x3D; c;<br>    idx++;<br>}<br>遍历以a为起的边<br>for(int i &#x3D; he[a] i !&#x3D;-1 i&#x3D;ne[i]){<br>      int b &#x3D; e[i]，c &#x3D; w[i]<br>}<br>dist[x]&#x3D;y 表示起点从到x的举例为y<br>void dijkstra() {<br>        &#x2F;&#x2F; 起始先将所有的点标记为「未更新」和「距离为正无穷」<br>        Arrays.fill(vis, false);<br>        Arrays.fill(dist, INF);<br>        &#x2F;&#x2F; 只有起点最短距离为 0<br>        dist[k] &#x3D; 0;<br>        &#x2F;&#x2F; 使用「优先队列」存储所有可用于更新的点<br>        &#x2F;&#x2F; 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点<br>        PriorityQueue&lt;int[]&gt; q &#x3D; new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);<br>        q.add(new int[]{k, 0});<br>        while (!q.isEmpty()) {<br>            &#x2F;&#x2F; 每次从「优先队列」中弹出<br>            int[] poll &#x3D; q.poll();<br>            int id &#x3D; poll[0], step &#x3D; poll[1];<br>            &#x2F;&#x2F; 如果弹出的点被标记「已更新」，则跳过<br>            if (vis[id]) continue;<br>            &#x2F;&#x2F; 标记该点「已更新」，并使用该点更新其他点的「最短距离」<br>            vis[id] &#x3D; true;<br>            for (int i &#x3D; he[id]; i !&#x3D; -1; i &#x3D; ne[i]) {<br>                int j &#x3D; e[i];<br>                if (dist[j] &gt; dist[id] + w[i]) {<br>                    dist[j] &#x3D; dist[id] + w[i];<br>                    q.add(new int[]{j, dist[j]});<br>                }<br>            }<br>        }<br>    }</p>
+<p>最近公共祖先<br>如上图，7和9的最近公共祖先是7，<br>9和18的最近公共祖先是3</p>
+<p>倍增算法<br>算法的时间复杂度为O(nlogn)<br>记录各个点的深度和他们2^i级的的祖先<br>用数组depth表示每个节点的深度，<br>fa[i][j]表示节点i的2^j 级祖先</p>
+<p>void add(int x,int y){<br>    edge[++cnt].to&#x3D;y;<br>    edge[cnt].next&#x3D;head[x];<br>    head[x]&#x3D;cnt;<br>}</p>
+<p>&#x2F;&#x2F;now表示当前节点，fath表示它的父亲节点<br>void dfs(int now, int fath) {<br>    fa[now][0] &#x3D; fath; depth[now] &#x3D; depth[fath] + 1;<br>    for(int i &#x3D; 1; i &lt;&#x3D; lg[depth[now]]; ++i){<br>      &#x2F;&#x2F;这个转移可以说是算法的核心之一<br>        &#x2F;&#x2F;意思是now的2^i祖先等于now的2^(i-1)祖先的2^(i-1)祖先<br>      &#x2F;&#x2F;2^i &#x3D; 2^(i-1) + 2^(i-1)<br>      fa[now][i] &#x3D; fa[fa[now][i-1]][i-1];	<br>  }<br>  &#x2F;&#x2F;遍历和当前结点相连的所有的边（按输入的倒序），最后一条边的 edge[i].next&#x3D;&#x3D;0<br>    for(int i &#x3D; head[now]; i; i &#x3D; edge[i].next)<br>        if(edge[i].to !&#x3D; fath) dfs(edge[i].to, now);<br>  }</p>
+<p>预处理完毕后，我们就可以去找它的LCA<br>了，为了让它跑得快一些，我们可以加一<br>个常数优化</p>
+<p> &#x2F;&#x2F;预先算出log_2(i)+1的值，用的时<br> &#x2F;&#x2F;候直接调用就可以了<br>for(int i &#x3D; 1; i &lt;&#x3D; n; ++i)<br>      lg[i] &#x3D; lg[i-1] + (1 &lt;&lt; lg[i-1] &#x3D;&#x3D; i);</p>
+<p>倍增LCA<br>我们先把两个点提到同一高度，再统一<br>开始跳。</p>
+<p>但我们在跳的时候不能直接跳到它们的LCA，因为这可能会误判，比如44和88，在跳的时候，我们可能会认为11是它们的LCA，但11只是它们的祖先，它们的<br>LCA其实是33。所以我们要跳到它们LCA的下面一层，比如44和88，我们就跳到44和55，然后输出它们的父节点，这样就不会误判了</p>
+<p>int LCA(int x, int y) {<br>  &#x2F;&#x2F;不妨设x的深度 &gt;&#x3D; y的深度<br>    if(depth[x] &lt; depth[y])<br>        swap(x, y);<br>    while(depth[x] &gt; depth[y])<br>        x &#x3D; fa[x][lg[depth[x]-depth[y]] - 1]; &#x2F;&#x2F;先跳到同一深度<br>    if(x &#x3D;&#x3D; y)  &#x2F;&#x2F;如果x是y的祖先，那他们的LCA肯定就是x了<br>        return x;<br>    for(int k &#x3D; lg[depth[x]] - 1; k &gt;&#x3D; 0; –k) &#x2F;&#x2F;不断向上跳（lg就是之前说的常数优化）<br>        if(fa[x][k] !&#x3D; fa[y][k])  &#x2F;&#x2F;因为我们要跳到它们LCA的下面一层，所以它们肯定不相等，如果不相等就跳过去。<br>        	x &#x3D; fa[x][k], y &#x3D; fa[y][k];<br>    return fa[x][0];  &#x2F;&#x2F;返回父节点<br>}</p>
+]]></content>
+      <tags>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -69,66 +149,6 @@
       </tags>
   </entry>
   <entry>
-    <title>JVM</title>
-    <url>/2023/04/05/JVM/</url>
-    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
-</code></pre>
-<p>1.jvm参数设置<br>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
-<p>2.new对象做了什么&#x2F;对象创建过程<br>类加载检测<br>jvm遇到new指令后，会检查该对象的符号引用是否在常量池中，如果存在那么会进行类加载检测，否则进行类加载过程<br>分配内存<br>分配内存的方法有指针碰撞 空闲列表，jvm一般采用cas+失败重试进行内存分配为了避免并发分配竞争问题，每个线程在JVM启动时都会在Eden区分配一块TLAB内存(线程本地分配缓冲)用于分配内存，如果TLAB内存不足只能在Eden区进行分配<br>初始化<br>给对象分配空间后，对空间进行赋值默认值<br>设置对象头<br>每个对象都有对象头、实例数据和对齐填充。对象头包括mardword、klass pointer、数组长度<br>执行<init>方法<br>设置完对象头后执行init方法按照预期值对内存空间进行初始化，然后执行构造方法</init></p>
-<p>3.类的实例化顺序<br>静态变量→静态代码块→普通变量→普通代码块→构造方法<br>静态变量和静态代码块<br>在类加载到jvm初始化一次<br>普通变量和普通代码块<br>每次类对象实例化时初始化</p>
-<p>4.什么是栈上分配<br>一般new出来的对象都是放在堆上的，当对象没有被引用时会被GC回收，当对象创建过多时，GC会有一定压力，所以为了避免临时对象直接分配到堆上，JVM可以通过逃逸分析，将不被外部引用的对象不进行创建，采用标量替换的方式直接分配到栈上，这样可以随着栈帧的出栈而销毁，减轻GC压力<br>逃逸分析 可以理解为 对象被return就代表逃逸<br>标量替换 可以理解为 将对象的成员变量拆出来，标识是哪个对象的</p>
-<p>5.常量池的分类<br>class常量池<br>存放编译期间的字面量和符号引用<br>运行时常量池<br>在jvm运行期间，会将字符串常量池的静态数据加载到方法区<br>全局常量池<br>存放字符串的引用值<br>字符串常量池<br>用于缓存字符串<br>1)当以字符串常量的方式创建字符串，会先从常量池中查找，如果找到就返回其引用，否则在常量池中创建并返回引用<br>2)当以new的方式创建字符串，无论常量池中是否存在字符串引用，都会在堆内存中创建一个字符串对象并返回引用</p>
-<p>6.判断垃圾算法<br>引用计数法<br>每个对象维护一个计数器 被引用+1 不被引用-1 但是无法解决循环依赖问题<br>可达性分析法<br>从gc root出发，通过引用对象图，标记出所有非垃圾对象，清理未被标记的对象</p>
-<p>7.哪些对象可以作为gc root<br>虚拟机栈引用的对象<br>静态属性引用的对象<br>常量引用的对象<br>本地方法栈中jni引用的对象<br>持有同步锁的对象，spring bean</p>
-<p>8.jvm组成部分<br>两个系统<br>类加载子系统-将字节码文件加载到jvm内存中<br>字节码执行引擎-负责gc 执行字节码文件指令和修改程序计数器的值<br>两个组件<br>运行时数据区(即jvm内存)<br>本地接口(JNI-Java native interface)</p>
-<p>9.jvm类加载过程<br>分为7个阶段<br>加载 链接(验证 准备 解析) 初始化 使用 卸载<br>加载<br>将字节码文件加载到运行时的数据区的方法区(即jvm内存的方法区)<br>验证<br>对字节码进行校验，包括文件格式验证、元数据验证、字节码验证和符号引用验证<br>如魔数、主次版本号<br>准备<br>将类中的静态变量分配空间并设置默认值<br>解析<br>将符号引用变为直接引用<br>符号引用在字节码文件中的以字符串的形式表示的<br>直接引用是指向内存的实际对象或函数的指针<br>初始化<br>执行类构造器方法，执行完成后类被初始化为可执行的状态，类的静态变量被正确赋值及静态代码块执行完毕</p>
-<p>10.哪些情况下类被卸载<br>垃圾收集时，如果类的Class对象没有被任何引用指向，即无法通过反射访问该类。则类会被垃圾收集器回收，导致类被卸载<br>程序退出时，Java虚拟机会退出卸载所有类<br>当类的加载器被回收<br>当前类的所有对象实例都被回收</p>
-<p>11.Java oom类型<br>java heap space对象过多，过大或堆内存泄露导致的内存不足<br>unable to create native thread 创建过多线程<br>PermGen space &#x2F; Metaspace 存储类的字节码和字符串常量池的永生 代内存满了 &#x2F; 类数量加载过多或类信息  占用空间过多<br>Direct buffer memory 使用Java的nio(非阻塞I&#x2F;O)直接内存并  且超过–Xx:MaxDirectMemory参数设定的最大值<br>gc overhead limit exceeded jvm花费大量时间进行垃圾回收且回收  空间小  垃圾回收频繁 无法解决内存问题</p>
-<p>stackoverflow栈溢出是线程栈空间不足不会导致oom，发生在函数递归调用过深或局部变量占用太大超过栈的容量限制</p>
-<p>12.gc(garbage collection)分为<br>新生代gcminor gc<br>   新创建的对象加入时，新时代空间不足 触发新时代gc<br>老年代gcmajor gc<br>   经过gc后仍存活的对象进入老年代导致老年代空间不足触发老年代gc<br>全局gcfull gc<br>   永久代空间不足 手动触发gc</p>
-<p>13.jvm区域划分<br>堆 元空间(方法区) 本地方法区 虚拟机栈 程序计数器<br>堆分为新时代和老年代<br>线程共享的区域:堆 元空间<br>线程私有的区域:本地方法区 虚拟机栈 程序计数器<br>堆分为新生代和老年代，新手代分为 eden(伊甸区)和s0 s1(两个存活区)，占比为8:1:1</p>
-<p>14.垃圾回收器有哪些<br>1)单线程&#x2F;串行回收器<br>serial回收器<br>serial old回收器<br>2)多线程&#x2F;并行回收器<br>parallel<br>parallel old<br>parnew与cms搭配使用<br>3)多线程&#x2F;响应时间优先的并发回收器<br>cms(concurrent mark sweep)<br>g1(garbage–first)</p>
-<p>15.cms和g1特点<br>CMS特点(jdk1.5)<br>并发收集 低停顿<br>避免老年代出现长时间卡顿(stw)<br>工作流程<br>   初始标记 并发标记 并发预清理<br>   重新标记 并发清除 并发重置<br>   初始标记和重新标记需要stw<br>无法清理浮动垃圾<br>   并发标记和并发清理阶段，用户线程继续运行会有新的垃圾对象产生，这一部分垃圾对象是在标记过程结束后产生的CMS无法在当次收集中处理掉它们，需要留到下一次垃圾收集时再清理掉,这一部分垃圾称为“浮动垃圾”<br>使用标记清除算法，会产生大量空间碎片<br>并发模式失败(concurrent mode failure)<br> 1)老年代空间不足<br>   cms在并发标记过程在发现大量对象需要晋升到老年代且老年代空间不足以容纳这些对象时会触发cmf并发阶段未完成<br> 2)cms没能在并发阶段内完成预取工作，   为了防止oom 需要进行full gc会stw， 无法进行并行清理<br> 3)由于在垃圾回收阶段用户线程还在并发 运行，那就还需要预留足够的内存空间 提供给用户线程使用，因此CMS不能像其他回收器那样等到老年代几乎完全被填满了再进<br>   行回收，必须预留一部分空间供并发回收时的程序运行使用。默 认情况下，当老年代使用了 92% 的空间后就会触发 CMS 垃圾回收，这个值通过-XXCMSInitiating<br>   OccupancyFraction 参数来设置。</p>
-<p>16.cms在并发标记阶段的多标和漏标<br>标的是非垃圾对象<br>多标(并发标记阶段)<br>多标 就是本应该是垃圾对象，但是由于用户线程还在运行，对象间的引用关系可能发生变化，所以没来及去清除存活标记<br>漏标(并发标记 重新标记阶段)<br>漏标就是新来的对象引用了GC Root链上的对象，但是由于用户线程还在运行，没来得及标记为非垃圾，被GC误清除</p>
-<p>17.cms产生的内存碎片<br>使用参数-xx:+UseCMSCompactAtFullCollection，让cms在执行full gc   时进行内存碎片整理<br>设置-xx:CMSFullGCsBeforeCompaction&#x3D;n 参数让cms在执行n次  不带压缩的gc后进行一次带压缩整理的full gc<br>当内存碎片严重到cms无法管理时，采用serial old执行标记 整理算法</p>
-<p>18.解决cms漏标问题<br>三色标记法<br>写屏障<br>增加重新标记阶段的暂停时间<br>调整cms触发的阈值</p>
-<p>19.cms三色标记<br>黑色<br>所有引用扫描过<br>白色<br>未被访问过<br>灰色<br>访问过，但至少一个对象的引用没有被扫描过</p>
-<p>20.cms三色标记法的作用<br>用来解决漏标问题<br>分为增量更新和原始快照<br>增量更新是通过记录下黑色对象新增的白色对象引用关系，将黑色对象回退到灰色对象，重新深度扫描一次，一般用于重新标记阶段<br>原始快照是通过记录下灰色对象删除的白色对象的引用关系，在后续的并发标记或重新标记阶段可能会被重新考虑，以灰色对象为根简单扫描一下确保不会漏标，将白色对象标记为黑色对象，当作浮动垃圾处理，等待下一轮Gc</p>
-<p>21.G1特点(jdk1.7)<br>分代收集<br>   将堆划分成多个大小相等的独立 Regi<br>   on区域(2048个)<br>并行与并发<br> 使用多线程进行垃圾回收并尽量减少stw<br> 的停顿时间，其他用户线程进行运行<br>空间整合<br>   从整体看，基于标记-整理算法<br>   从局部看，基于标记－复制算法<br>可预测的停顿<br>   G1跟踪各个Region的回收获得的空间<br>   大小和回收所需要的经验值，维护一个<br>   优先列表<br>运行流程<br>   初始标记 并发标记 最终标记 筛选回收<br>   初始标记 和 CMS的初始标记 一样<br>   并发标记 和 CMS的并发标记 一样<br>   最终标记 和 CMS的重新标记 一样，但<br>   是这里对于 漏标 的对象采用 原始快照<br>   的方式进行处理<br>使用humogous区存放大对象<br>如果humogous存放不下那么会使用多个region区进行存放<br>筛选回收<br>stw时对未标记的region进行清理，根据每个region区域回收价值和成本进行排序<br>根据用户预期停顿时间来选择合适的回收方式，不会回收所有垃圾对象，考虑到预期停顿时间，只会回收接近预取停顿时间的region，其余region等待下一次gc</p>
-<p>22.jdk8之后出现的gc<br>epsilon(jdk11)<br>1)它是一个“被动”的收集器，不会执行任何实际的垃圾收集工作，而是当应用程序请求进行垃圾收集时，直接退出程序。它只负责分配内存，并不回收内存。当堆内存耗尽之后，JVM 直接因为 OutOf<br>Memory而终止Epsilon的主要用途是用于性能测试和故障排查，帮助开发者确定应用程序的垃圾收集开销是否过大。<br>2)适合运行时间很短的程序，比如命令行程序，定期执行的简单任务<br>3)对延迟和吞吐量很敏感的程序。回收垃圾的操作会带来延迟，Epsilon 完全避免了这些延迟<br>zgc(jdk11)<br>ZGC（Z Garbage Collector）是一款低延迟垃圾收集器，其设计目标是实现可预测的、小于10毫秒的停顿时间。ZGC采用了基于颜色的指针追踪技术，以及并发处理等方式，从而实现了低延迟和高吞吐量的平衡。</p>
-<p>23.垃圾收集器的核心指标，设计者追求什么<br>吞吐量<br>暂停时间<br>内存占用<br>追求在延迟可控的情况下，获得尽可能高的吞吐量，追求全功能收集器</p>
-<p>25.什么是STW<br>STW 就是stop the world，会暂停所有用户线程来进行GC，对于暂停的时间与垃圾收集器有关<br>年轻代的Minor GC(Young GC) 几乎无感觉<br>老年代的Full GC可能会感觉到卡顿一下</p>
-<p>26.为什么要进行STW<br>STW 主要是为了更好的维护引用对象图来进行GC，如果不进行STW，用户线程还在进行着，可能一些对象还没来得及被标记就被GC了，这个是比较严重的问题</p>
-<p>27.区分并发与并行的区别：<br>并行清理只是一个概念，是指多个垃圾<br>   回收线程同时运行，来清理垃圾，此时<br>   没有任何用户线程处于工作状态<br>而并发清理是只有一个垃圾回收线程运<br>   行，其他用户线程依然处于工作状态，<br>   并会源源不断地产生浮动垃圾，CMS<br>   中的就是并发清理</p>
-<p>28.jvm调优</p>
-]]></content>
-      <tags>
-        <tag>JVM详谈</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>HashMap</title>
-    <url>/2022/04/05/HashMap/</url>
-    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
-</code></pre>
-<p>1.什么是哈希?什么是哈希表?<br>1)哈希是一种能够将输入内容通过特定的散列算法转换成固定长度的哈希值，作为数据的唯一标识<br>2)哈希是不可逆的，因此可以用于密码存储 数据完整性校验 md5 sha1 sha256<br>3)哈希表是一种通过key访问内存存储位置的数据结构，通过哈希函数计算key的哈希值将数据映射到对应哈希值的位置</p>
-<p>2.为什么hashmap使用红黑树<br>当链表长度过长时会导致查询效率降低因此jdk1.8引入了红黑树<br>红黑树的特点<br>1)红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2)与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3)解决链表长度过长</p>
-<p>3.hashmap为什么不是线程安全jdk1.7hashmap扩容可能死循环及数据丢失<br>jdk1.8扩容可能数据丢失<br>1)扩容操作的并发问题<br>当进行扩容操作时，会重新计算哈希并定位新的位置，多个线程进行修改操作会导致一些线程在旧表执行，一些线程在新表执行，在旧表执行的线程可能会导致数据丢失或覆盖已经迁移的数据<br>2)哈希冲突导致的数据覆盖问题<br>两个线程进行put操作并计算出相同的hash值发生哈希冲突，一个线程判断哈希冲突被挂起，另一个线程执行插入操作，当第一个线程恢复执行时进行插入操作覆盖原有的数据<br>3)原子性和内存可见性<br>hashmap操作不是原子性的，意味着操作可以被打断导致数据不一致。<br>由于线程缓存可见性问题，一个线程对hashmap的修改可能不会立即对其他线程可见</p>
-<p>4.如何解决hashmap的线程安全问题<br>1)使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2)加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3)使用concurrenthashmap<br>4)volatile关键字保证内存可见性</p>
-<p>5.concurrenthashmap如何实现size()<br>size()方法基于基于baseCount和CountCell数组，CountCell数组类似LongAdder动态扩展数组<br>size()具体流程<br>1)读取baseCount的值<br>2)检查并累加所有CountCell的计数值<br>3)两次遍历策略<br>第一次遍历统计baseCount和CountCell的总和，第二次遍历再次统计并对比两次遍历所有CountCell的修改次数，如果两次的修改次数相同则认为统计结果有效并返回该结果，否则重新统计</p>
-<p>6.hashmap读写 containskey效率<br>读&#x2F;写 理想情况为O(1) 在保证链表长度为1的情况下可以是O(1)即无哈希冲突 最差O(N)<br>containskey  O(1)</p>
-<p>7.hashmap扩容为什么会死循环<br>jdk1.7采用的是头插法，扩容可能成链表环导致死循环<br>而jdk1.8采用尾插法<br>多个线程同时对链表进行操作，头插法可能会导致链表中的节点指向错误的位置，从而形成一个环形链表，进而使得查询元素的操作陷入死循环无法结束</p>
-<p>8.hashmap如何确定key的位置<br>先使用hashcode()求出key的哈希值<br>使用扰动函数计算哈希值<br>哈希值 &amp; (n-1) n是数组长度</p>
-<p>扰动函数在jdk1.8<br>hash ^ (hash &gt;&gt;&gt; 16)<br>在jdk1.7<br>hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
-<p>9.解决哈希冲突的方法<br>1.开放地址法:分为线性探测 和二次探测 和双重散列<br>找到空的数组下标<br>2.再哈希<br>使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)<br>如果哈希值一样，存储在数组的下标一样并链表的形式存储<br>4.建立公共溢出区</p>
-<p>10.hashmap红黑树会无限高吗<br>红黑树是自平衡二叉查找树，保证根结点到叶子结点的最长路径不超过最短路径的两倍从而维护树的平衡 当红黑树的高度超过8时，会进行旋转</p>
-<p>11.二叉查找树 红黑树 avl树的区别<br>二叉查找树是最基本的查找树结构，红黑树和avl树在二叉查找树的基础上为了提高查询效率进行优化<br>红黑树是自平衡二叉查找树，平衡是弱平衡，通过任何路径都不超过其他路径的两倍来保持树的平衡，旋转次数少，旋转分为左旋和右旋，适合插入 删除频繁的场景<br>avl树是严格平衡二叉查找树，要求任何节点的两个子树高度最大差为1保持平衡<br>比红黑树在插值上更加高效，但插入和删除会有更多旋转，增加维护平衡成本</p>
-]]></content>
-      <tags>
-        <tag>深入了解HashMap</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Redis分布式锁</title>
     <url>/2023/06/05/Redis/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
@@ -138,26 +158,6 @@
 ]]></content>
       <tags>
         <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>最短路</title>
-    <url>/2022/01/05/%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
-</code></pre>
-<p>单源最短路-堆优化dijkstra<br>arrays.fill(he，-1);<br>void add(int a, int b, int c) {<br>    e[idx] &#x3D; b;<br>    ne[idx] &#x3D; he[a];<br>    he[a] &#x3D; idx;<br>    w[idx] &#x3D; c;<br>    idx++;<br>}<br>遍历以a为起的边<br>for(int i &#x3D; he[a] i !&#x3D;-1 i&#x3D;ne[i]){<br>      int b &#x3D; e[i]，c &#x3D; w[i]<br>}<br>dist[x]&#x3D;y 表示起点从到x的举例为y<br>void dijkstra() {<br>        &#x2F;&#x2F; 起始先将所有的点标记为「未更新」和「距离为正无穷」<br>        Arrays.fill(vis, false);<br>        Arrays.fill(dist, INF);<br>        &#x2F;&#x2F; 只有起点最短距离为 0<br>        dist[k] &#x3D; 0;<br>        &#x2F;&#x2F; 使用「优先队列」存储所有可用于更新的点<br>        &#x2F;&#x2F; 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点<br>        PriorityQueue&lt;int[]&gt; q &#x3D; new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);<br>        q.add(new int[]{k, 0});<br>        while (!q.isEmpty()) {<br>            &#x2F;&#x2F; 每次从「优先队列」中弹出<br>            int[] poll &#x3D; q.poll();<br>            int id &#x3D; poll[0], step &#x3D; poll[1];<br>            &#x2F;&#x2F; 如果弹出的点被标记「已更新」，则跳过<br>            if (vis[id]) continue;<br>            &#x2F;&#x2F; 标记该点「已更新」，并使用该点更新其他点的「最短距离」<br>            vis[id] &#x3D; true;<br>            for (int i &#x3D; he[id]; i !&#x3D; -1; i &#x3D; ne[i]) {<br>                int j &#x3D; e[i];<br>                if (dist[j] &gt; dist[id] + w[i]) {<br>                    dist[j] &#x3D; dist[id] + w[i];<br>                    q.add(new int[]{j, dist[j]});<br>                }<br>            }<br>        }<br>    }</p>
-<p>最近公共祖先<br><img src="/2022/01/05/%E7%AE%97%E6%B3%95/image.png" alt="alt text"><br>如上图，7和9的最近公共祖先是7，<br>9和18的最近公共祖先是3</p>
-<p>倍增算法<br>算法的时间复杂度为O(nlogn)<br>记录各个点的深度和他们2^i级的的祖先<br>用数组depth表示每个节点的深度，<br>fa[i][j]表示节点i的2^j 级祖先</p>
-<p>void add(int x,int y){<br>    edge[++cnt].to&#x3D;y;<br>    edge[cnt].next&#x3D;head[x];<br>    head[x]&#x3D;cnt;<br>}</p>
-<p>&#x2F;&#x2F;now表示当前节点，fath表示它的父亲节点<br>void dfs(int now, int fath) {<br>    fa[now][0] &#x3D; fath; depth[now] &#x3D; depth[fath] + 1;<br>    for(int i &#x3D; 1; i &lt;&#x3D; lg[depth[now]]; ++i){<br>      &#x2F;&#x2F;这个转移可以说是算法的核心之一<br>        &#x2F;&#x2F;意思是now的2^i祖先等于now的2^(i-1)祖先的2^(i-1)祖先<br>      &#x2F;&#x2F;2^i &#x3D; 2^(i-1) + 2^(i-1)<br>      fa[now][i] &#x3D; fa[fa[now][i-1]][i-1];	<br>  }<br>  &#x2F;&#x2F;遍历和当前结点相连的所有的边（按输入的倒序），最后一条边的 edge[i].next&#x3D;&#x3D;0<br>    for(int i &#x3D; head[now]; i; i &#x3D; edge[i].next)<br>        if(edge[i].to !&#x3D; fath) dfs(edge[i].to, now);<br>  }</p>
-<p>预处理完毕后，我们就可以去找它的LCA<br>了，为了让它跑得快一些，我们可以加一<br>个常数优化</p>
-<p> &#x2F;&#x2F;预先算出log_2(i)+1的值，用的时<br> &#x2F;&#x2F;候直接调用就可以了<br>for(int i &#x3D; 1; i &lt;&#x3D; n; ++i)<br>      lg[i] &#x3D; lg[i-1] + (1 &lt;&lt; lg[i-1] &#x3D;&#x3D; i);</p>
-<p>倍增LCA<br>我们先把两个点提到同一高度，再统一<br>开始跳。</p>
-<p>但我们在跳的时候不能直接跳到它们的LCA，因为这可能会误判，比如44和88，在跳的时候，我们可能会认为11是它们的LCA，但11只是它们的祖先，它们的<br>LCA其实是33。所以我们要跳到它们LCA的下面一层，比如44和88，我们就跳到44和55，然后输出它们的父节点，这样就不会误判了</p>
-<p>int LCA(int x, int y) {<br>  &#x2F;&#x2F;不妨设x的深度 &gt;&#x3D; y的深度<br>    if(depth[x] &lt; depth[y])<br>        swap(x, y);<br>    while(depth[x] &gt; depth[y])<br>        x &#x3D; fa[x][lg[depth[x]-depth[y]] - 1]; &#x2F;&#x2F;先跳到同一深度<br>    if(x &#x3D;&#x3D; y)  &#x2F;&#x2F;如果x是y的祖先，那他们的LCA肯定就是x了<br>        return x;<br>    for(int k &#x3D; lg[depth[x]] - 1; k &gt;&#x3D; 0; –k) &#x2F;&#x2F;不断向上跳（lg就是之前说的常数优化）<br>        if(fa[x][k] !&#x3D; fa[y][k])  &#x2F;&#x2F;因为我们要跳到它们LCA的下面一层，所以它们肯定不相等，如果不相等就跳过去。<br>        	x &#x3D; fa[x][k], y &#x3D; fa[y][k];<br>    return fa[x][0];  &#x2F;&#x2F;返回父节点<br>}</p>
-]]></content>
-      <tags>
-        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
