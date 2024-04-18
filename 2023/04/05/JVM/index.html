@@ -71,7 +71,7 @@
         <div class="content markdown">
             <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p><img src="/2023/04/05/JVM/2.jpg" alt="alt text"><br>1.jvm参数设置<br>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
+<p><img src="/2023/04/05/JVM/6.jpg" alt="alt text"><br>1.jvm参数设置<br>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
 <p>2.new对象做了什么&#x2F;对象创建过程<br>类加载检测<br>jvm遇到new指令后，会检查该对象的符号引用是否在常量池中，如果存在那么会进行类加载检测，否则进行类加载过程<br>分配内存<br>分配内存的方法有指针碰撞 空闲列表，jvm一般采用cas+失败重试进行内存分配为了避免并发分配竞争问题，每个线程在JVM启动时都会在Eden区分配一块TLAB内存(线程本地分配缓冲)用于分配内存，如果TLAB内存不足只能在Eden区进行分配<br>初始化<br>给对象分配空间后，对空间进行赋值默认值<br>设置对象头<br>每个对象都有对象头、实例数据和对齐填充。对象头包括mardword、klass pointer、数组长度<br>执行<init>方法<br>设置完对象头后执行init方法按照预期值对内存空间进行初始化，然后执行构造方法</init></p>
 <p>3.类的实例化顺序<br>静态变量→静态代码块→普通变量→普通代码块→构造方法<br>静态变量和静态代码块<br>在类加载到jvm初始化一次<br>普通变量和普通代码块<br>每次类对象实例化时初始化</p>
 <p>4.什么是栈上分配<br>一般new出来的对象都是放在堆上的，当对象没有被引用时会被GC回收，当对象创建过多时，GC会有一定压力，所以为了避免临时对象直接分配到堆上，JVM可以通过逃逸分析，将不被外部引用的对象不进行创建，采用标量替换的方式直接分配到栈上，这样可以随着栈帧的出栈而销毁，减轻GC压力<br>逃逸分析 可以理解为 对象被return就代表逃逸<br>标量替换 可以理解为 将对象的成员变量拆出来，标识是哪个对象的</p>
