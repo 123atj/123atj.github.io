@@ -73,7 +73,7 @@
 
         </div>
         <div class="content markdown">
-            <p>1.读写分离</p>
+            <p><img src="/.com//blog\source_posts\a.jpg" alt="a"><br>1.读写分离</p>
 <p>2.分库分表<br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q">https://mp.weixin.qq.com/s/0NXsi1J0OqVQ7lk24b0p9Q</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg">https://mp.weixin.qq.com/s/x2PT6lV8jZgrb0jzi6TIvg</a></p>
 <p>3.SQL优化<br>1)加索引+索引使用原则(哪些情况索引失效)<br>2)如果知道要返回的数据有n条 可以使用limit n<br>3)只返回需要的字段 不用select *<br>4)尽量避免使用子查询<br>5)用in 代替or<br>6)优化group by<br>如果对排序没有要求，那么可以order by null，进行group by时会对group by的字段进行order by<br>用where代替having，having只会在检索出所有记录才对结果集进行过滤<br>7)多次插入改为批量插入<br>8)exists适合于外表小 内表大 先查询外表，in适合外表大 内表小 先查询内表<br>select * from a where id in (select id from b) 括号是内表<br>9)尽量使用数据型字段<br>数据型字段进行匹配时只需要一次，而字符串形式字段需要对每个字符进行匹配<br>10)优化join连接<br>执行join时会对两个表进行比较<br>可以用记录数少的表作为驱动表，记录数多的作为被驱动表，左连接时对右表设置索引<br>当不带where条件<br>a left join b  a是前驱表<br>a right join b b是前驱表<br>a inner join b 数据少的是前驱表<br>a straight_join b  左表为前驱表<br>带where条件<br>带where条件的表是驱动表</p>
 <p>4.b+树高频率操作增删后会发生什么<br>mysql碎片 页分裂 磁盘io</p>
