@@ -10,8 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
     <meta name="keywords" content="Fechin,"> 
-    <meta name="description" content="
-                                                                                                  ,"> 
+    <meta name="description" content="                                                                                                   ,"> 
     <meta name="author" content="John Doe"> 
     <link rel="alternative" href="atom.xml" title="艾丽莎的个人小屋" type="application/atom+xml"> 
     <link rel="icon" href="/img/favicon.png"> 
@@ -20,18 +19,15 @@
     <meta name="twitter:creator" content="@yourtwitteridhere"/>
     <meta name="twitter:card" content="summary_large_image"/>
     <meta name="twitter:title" content="HashMap - 艾丽莎的个人小屋"/>
-    <meta name="twitter:description" content="
-                                                                                                  ,"/>
+    <meta name="twitter:description" content="                                                                                                   ,"/>
     <meta property="og:image" content="https://bangdream.moe/img/ident.png"/>
-    <meta property="og:image:alt" content="
-                                                                                                  ,"/>
+    <meta property="og:image:alt" content="                                                                                                   ,"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="600"/>
     <meta property="og:site_name" content="艾丽莎的个人小屋"/>
     <meta property="og:type" content="object"/>
     <meta property="og:title" content="HashMap - 艾丽莎的个人小屋"/>
-    <meta property="og:description" content="
-                                                                                                  ,"/>
+    <meta property="og:description" content="                                                                                                   ,"/>
     
 <link rel="stylesheet" href="/css/diaspora.css">
 
@@ -68,30 +64,22 @@
         <div class="stuff">
             <span>四月 05, 2022</span>
             
-  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3HashMap/" rel="tag">深入了解HashMap</a></li></ul>
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/Java%E9%9B%86%E5%90%88/" rel="tag">Java集合</a></li></ul>
 
 
         </div>
         <div class="content markdown">
-            <blockquote>
-<pre><code>                                                                                                                                                                                                                        ..
+            <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-</blockquote>
-<h4 id="1-什么是哈希-什么是哈希表"><a href="#1-什么是哈希-什么是哈希表" class="headerlink" title="1.什么是哈希?什么是哈希表?"></a>1.什么是哈希?什么是哈希表?</h4><p>1)哈希是一种能够将输入内容通过特定的散列算法转换成固定长度的哈希值，作为数据的唯一标识<br>2)哈希是不可逆的，因此可以用于密码存储 数据完整性校验 md5 sha1 sha256<br>3)哈希表是一种通过key访问内存存储位置的数据结构，通过哈希函数计算key的哈希值将数据映射到对应哈希值的位置</p>
-<h4 id="2-为什么hashmap使用红黑树"><a href="#2-为什么hashmap使用红黑树" class="headerlink" title="2.为什么hashmap使用红黑树"></a>2.为什么hashmap使用红黑树</h4><p>当链表长度过长时会导致查询效率降低因此jdk1.8引入了红黑树<br>红黑树的特点<br>1)红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2)与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3)解决链表长度过长</p>
-<h4 id="3-hashmap为什么不是线程安全的"><a href="#3-hashmap为什么不是线程安全的" class="headerlink" title="3.hashmap为什么不是线程安全的"></a>3.hashmap为什么不是线程安全的</h4><p>jdk1.7hashmap扩容可能死循环及数据丢失<br>jdk1.8扩容可能数据丢失</p>
-<h5 id="1-扩容操作的并发问题"><a href="#1-扩容操作的并发问题" class="headerlink" title="1)扩容操作的并发问题"></a>1)扩容操作的并发问题</h5><p>当进行扩容操作时，会重新计算哈希并定位新的位置，多个线程进行修改操作会导致一些线程在旧表执行，一些线程在新表执行，在旧表执行的线程可能会导致数据丢失或覆盖已经迁移的数据</p>
-<h5 id="2-哈希冲突导致的数据覆盖问题"><a href="#2-哈希冲突导致的数据覆盖问题" class="headerlink" title="2)哈希冲突导致的数据覆盖问题"></a>2)哈希冲突导致的数据覆盖问题</h5><p>两个线程进行put操作并计算出相同的hash值发生哈希冲突，一个线程判断哈希冲突被挂起，另一个线程执行插入操作，当第一个线程恢复执行时进行插入操作覆盖原有的数据</p>
-<h5 id="3-原子性和内存可见性"><a href="#3-原子性和内存可见性" class="headerlink" title="3)原子性和内存可见性"></a>3)原子性和内存可见性</h5><p>hashmap操作不是原子性的，意味着操作可以被打断导致数据不一致。<br>由于线程缓存可见性问题，一个线程对hashmap的修改可能不会立即对其他线程可见</p>
-<h4 id="4-如何解决hashmap的线程安全问题"><a href="#4-如何解决hashmap的线程安全问题" class="headerlink" title="4.如何解决hashmap的线程安全问题"></a>4.如何解决hashmap的线程安全问题</h4><p>1)使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2)加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3)使用concurrenthashmap<br>4)volatile关键字保证内存可见性</p>
-<h4 id="5-concurrenthashmap如何实现size"><a href="#5-concurrenthashmap如何实现size" class="headerlink" title="5.concurrenthashmap如何实现size()"></a>5.concurrenthashmap如何实现size()</h4><p>size()方法基于基于baseCount和CountCell数组，CountCell数组类似LongAdder动态扩展数组<br>size()具体流程<br>1)读取baseCount的值<br>2)检查并累加所有CountCell的计数值<br>3)两次遍历策略<br>第一次遍历统计baseCount和CountCell的总和，第二次遍历再次统计并对比两次遍历所有CountCell的修改次数，如果两次的修改次数相同则认为统计结果有效并返回该结果，否则重新统计</p>
-<h4 id="6-hashmap读写-containskey效率"><a href="#6-hashmap读写-containskey效率" class="headerlink" title="6.hashmap读写 containskey效率"></a>6.hashmap读写 containskey效率</h4><p>读&#x2F;写 理想情况为O(1) 在保证链表长度为1的情况下可以是O(1)即无哈希冲突 最差O(N)<br>containskey  O(1)</p>
-<h4 id="7-hashmap扩容为什么会死循环"><a href="#7-hashmap扩容为什么会死循环" class="headerlink" title="7.hashmap扩容为什么会死循环"></a>7.hashmap扩容为什么会死循环</h4><p>jdk1.7采用的是头插法，扩容可能成链表环导致死循环<br>而jdk1.8采用尾插法<br>多个线程同时对链表进行操作，头插法可能会导致链表中的节点指向错误的位置，从而形成一个环形链表，进而使得查询元素的操作陷入死循环无法结束</p>
-<h4 id="8-hashmap如何确定key的位置"><a href="#8-hashmap如何确定key的位置" class="headerlink" title="8.hashmap如何确定key的位置"></a>8.hashmap如何确定key的位置</h4><p>先使用hashcode()求出key的哈希值<br>使用扰动函数计算哈希值<br>哈希值 &amp; (n-1) n是数组长度</p>
-<p>扰动函数在jdk1.8<br>hash ^ (hash &gt;&gt;&gt; 16)<br>在jdk1.7<br>hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
-<h4 id="9-解决哈希冲突的方法"><a href="#9-解决哈希冲突的方法" class="headerlink" title="9.解决哈希冲突的方法"></a>9.解决哈希冲突的方法</h4><p>1.开放地址法:分为线性探测 和二次探测 和双重散列<br>找到空的数组下标<br>2.再哈希<br>使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)<br>如果哈希值一样，存储在数组的下标一样并链表的形式存储<br>4.建立公共溢出区</p>
-<h4 id="10-hashmap红黑树会无限高吗"><a href="#10-hashmap红黑树会无限高吗" class="headerlink" title="10.hashmap红黑树会无限高吗"></a>10.hashmap红黑树会无限高吗</h4><p>红黑树是自平衡二叉查找树，保证根结点到叶子结点的最长路径不超过最短路径的两倍从而维护树的平衡 当红黑树的高度超过8时，会进行旋转</p>
-<h4 id="11-二叉查找树-红黑树-avl树的区别"><a href="#11-二叉查找树-红黑树-avl树的区别" class="headerlink" title="11.二叉查找树 红黑树 avl树的区别"></a>11.二叉查找树 红黑树 avl树的区别</h4><p>二叉查找树是最基本的查找树结构，红黑树和avl树在二叉查找树的基础上为了提高查询效率进行优化<br>红黑树是自平衡二叉查找树，平衡是弱平衡，通过任何路径都不超过其他路径的两倍来保持树的平衡，旋转次数少，旋转分为左旋和右旋，适合插入 删除频繁的场景<br>avl树是严格平衡二叉查找树，要求任何节点的两个子树高度最大差为1保持平衡<br>比红黑树在插值上更加高效，但插入和删除会有更多旋转，增加维护平衡成本</p>
+<h4 id="Hashmap底层结构"><a href="#Hashmap底层结构" class="headerlink" title="Hashmap底层结构"></a>Hashmap底层结构</h4><p>JDK1.8 之前 HashMap 底层是 数组和链表 JDK1.8HashMap 底层是 数组和链表&#x2F;红黑树<br>当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间。</p>
+<p>红黑树的特点<br>1.红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2.与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3.解决链表长度过长</p>
+<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>哈希冲突是指两个不同的Key经过哈希函数计算后得到相同的哈希值，从而被映射到哈希表的同一个位置。由于哈希表的大小是有限的，而可能的键值范围理论上是无限的，所以哈希冲突几乎是不可避免的<br>解决哈希冲突的方法<br>1.开放地址法:找到空的数组下标  分为线性探测 和二次探测 和双重散列<br>2.再哈希：使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)：如果哈希值一样，将节点封装链表节点存储在数组中对应位置的链表；如果是红黑树则封装为红黑树节点进行存储<br>4.建立公共溢出区：所有冲突的元素都存放在一个共享的溢出表中</p>
+<h4 id="HashMap扩容流程"><a href="#HashMap扩容流程" class="headerlink" title="HashMap扩容流程"></a>HashMap扩容流程</h4><p>HashMap的扩容实质上就是数组的扩容，会重新开辟一份2倍原数组容量的数组将老数组的元素转移过来<br>在JDK 7下会将老数组中的元素重新进行hash值计算得到新数组的下标，然后放到对应数组的槽位的链表上，扩容的目的主要是为了解决链表过长的问题<br>在JDK 8下也会将老数组中元素的数组下标重新计算<br>如果是红黑树对应的槽位，会通过低位和高位(依旧是老位置的元素和新位置的元素)拆分成两个子链表存放到不同的槽位，当数组长度达到64且链表长度达到8时转化为红黑树<br>如果是链表对应的槽位，操作和JDK 7的一样</p>
+<h4 id="Hashmap扩容存在的问题"><a href="#Hashmap扩容存在的问题" class="headerlink" title="Hashmap扩容存在的问题"></a>Hashmap扩容存在的问题</h4><p>jdk1.7<br>死循环问题<br>jdk1.7中，采用的是头插法，用一个e指针表示当前要扩容的节点，next表示接下来要扩容的节点，一直头插e更新e为next，直到e为null<br>假设现在有两个线程1和2，要扩容一个Map<br>1.线程1的局部变量e，指向了a节点，next指向b节点<br>2.线程2的局部变量也是如此，此时线程2先进行扩容，由于是头插法，最终结果变成了 b-&gt;a<br>3.但此时来到线程1先进行，局部变量不会受改变，e还是指向a，next还是b，所以把a头插，并且更新e为next，也就变成了b<br>4.线程1继续头插b，没问题，结果变成了[b-&gt;a]，看起来是没问题了，但是接下来判断e还没有next：<br>5.发现e的next是a，又要继续头插a，插完a之后，发现a的next又是b，此时造成死循环<br>数据丢失问题<br>对原数组元素进行rehash，在多线程环境下，如果两个线程同时尝试将元素插入到同一个桶的新位置，可能会导致其中一个线程插入的数据被另一个线程覆盖，从而发生数据丢失，因此HashMap是非线程安全的<br>jdk1.8<br>在扩容时采用了尾插法，降低了死循环发生的概率，但在扩容时仍然可能数据丢失</p>
+<h4 id="Hashmap的put流程"><a href="#Hashmap的put流程" class="headerlink" title="Hashmap的put流程"></a>Hashmap的put流程</h4><p>首先基于hash值计算得到数组下标<br>如果下标元素为空，在JDK 7下会将K-V封装成Entry对象，在JDK 8下会封装成Node对象，然后放到数组对应的槽位<br>如果下标元素不为空<br>在JDK 7下会先判断是否需要扩容，如果需要就优先扩容，然后采用头插法插入当前槽位的链表上，如果Key相同就更新Value<br>在JDK 8下不会先判断是否需要扩容，而是先判断节点是链表节点还是红黑树节点，最后再看扩容<br>如果是链表节点，将K-V封装成链表节点，采用尾插法插入当前槽位的链表上，如果Key相同就更新Value，当数组长度达到64且链表长度达到8就会将链表转化为红黑树来提升查询速度<br>如果是红黑树节点，将K-V封装成红黑树节点放到红黑树上，如果Key相同就更新Value，当红黑树节点数达到6时会退化成链表</p>
+<h4 id="如何解决hashmap的线程安全问题"><a href="#如何解决hashmap的线程安全问题" class="headerlink" title="如何解决hashmap的线程安全问题"></a>如何解决hashmap的线程安全问题</h4><p>1.使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2.加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3.使用ConcurrentHashmap</p>
+<h4 id="Hashmap如何确定key的位置"><a href="#Hashmap如何确定key的位置" class="headerlink" title="Hashmap如何确定key的位置"></a>Hashmap如何确定key的位置</h4><p>1.先使用hashcode()求出key的哈希值<br>2.使用扰动函数计算哈希值<br>3.通过 hash值 &amp; (n-1) n是数组长度</p>
+<p>扰动函数<br>jdk1.8  hash ^ (hash &gt;&gt;&gt; 16)<br>jdk1.7  hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">

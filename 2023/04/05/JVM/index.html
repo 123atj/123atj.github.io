@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JVM - 艾丽莎的个人小屋</title>
+    <title>JVM类加载机制 - 艾丽莎的个人小屋</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
@@ -18,7 +18,7 @@
     <meta name="twitter:image:src" content="https://bangdream.moe/img/ident.png"/>
     <meta name="twitter:creator" content="@yourtwitteridhere"/>
     <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="JVM - 艾丽莎的个人小屋"/>
+    <meta name="twitter:title" content="JVM类加载机制 - 艾丽莎的个人小屋"/>
     <meta name="twitter:description" content="                                                                                                   ,"/>
     <meta property="og:image" content="https://bangdream.moe/img/ident.png"/>
     <meta property="og:image:alt" content="                                                                                                   ,"/>
@@ -26,7 +26,7 @@
     <meta property="og:image:height" content="600"/>
     <meta property="og:site_name" content="艾丽莎的个人小屋"/>
     <meta property="og:type" content="object"/>
-    <meta property="og:title" content="JVM - 艾丽莎的个人小屋"/>
+    <meta property="og:title" content="JVM类加载机制 - 艾丽莎的个人小屋"/>
     <meta property="og:description" content="                                                                                                   ,"/>
     
 <link rel="stylesheet" href="/css/diaspora.css">
@@ -45,7 +45,7 @@
     <div class="bar" style="width: 0;"></div>
     <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://example.com"></a>
     <div title="播放/暂停" class="iconfont icon-play"></div>
-    <h3 class="subtitle">JVM</h3>
+    <h3 class="subtitle">JVM类加载机制</h3>
     <div class="social">
         <div>
             <div class="share">
@@ -60,45 +60,27 @@
     <div class="section">
         <div class="article">
     <div class='main'>
-        <h1 class="title">JVM</h1>
+        <h1 class="title">JVM类加载机制</h1>
         <div class="stuff">
             <span>四月 05, 2023</span>
             
-  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/JVM%E8%AF%A6%E8%B0%88/" rel="tag">JVM详谈</a></li></ul>
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/JVM/" rel="tag">JVM</a></li></ul>
 
 
         </div>
         <div class="content markdown">
             <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<h4 id="1-jvm参数设置"><a href="#1-jvm参数设置" class="headerlink" title="1.jvm参数设置"></a>1.jvm参数设置</h4><p>-xms初始堆内存 3g<br>-xmx最大堆内存 3g<br>-xmn年轻代内存 2g<br>-xss每个线程的栈大小 1M<br>-XX:MetaspaceSize 元空间初始大小<br>-XX:MaxMetaspaceSize 元空间最大值<br>-XX:SurvivorRatio 新时代eden区和单个survivor区的比值 默认为8<br>-XX:MaxTenuringThreshold<br>设置对象在Survivor区中的最大存活次数<br>-XX:PretenureSizeThreshold<br>设置对象直接进入老年代的阈值(大对象)</p>
-<h4 id="2-new对象做了什么-对象创建过程"><a href="#2-new对象做了什么-对象创建过程" class="headerlink" title="2.new对象做了什么&#x2F;对象创建过程"></a>2.new对象做了什么&#x2F;对象创建过程</h4><p><strong>类加载检测</strong><br>jvm遇到new指令后，会检查该对象的符号引用是否在常量池中，如果存在那么会进行类加载检测，否则进行类加载过程<br><strong>分配内存</strong><br>分配内存的方法有指针碰撞 空闲列表，jvm一般采用cas+失败重试进行内存分配为了避免并发分配竞争问题，每个线程在JVM启动时都会在Eden区分配一块TLAB内存(线程本地分配缓冲)用于分配内存，如果TLAB内存不足只能在Eden区进行分配<br><strong>初始化</strong><br>给对象分配空间后，对空间进行赋值默认值<br><strong>设置对象头</strong><br>每个对象都有对象头、实例数据和对齐填充。对象头包括mardword、klass pointer、数组长度<br><strong>执行<init>方法</init></strong><br>设置完对象头后执行init方法按照预期值对内存空间进行初始化，然后执行构造方法</p>
-<h4 id="3-类的实例化顺序"><a href="#3-类的实例化顺序" class="headerlink" title="3.类的实例化顺序"></a>3.类的实例化顺序</h4><p>静态变量→静态代码块→普通变量→普通代码块→构造方法<br>静态变量和静态代码块<br>在类加载到jvm初始化一次<br>普通变量和普通代码块<br>每次类对象实例化时初始化</p>
-<h4 id="4-什么是栈上分配"><a href="#4-什么是栈上分配" class="headerlink" title="4.什么是栈上分配"></a>4.什么是栈上分配</h4><p>一般new出来的对象都是放在堆上的，当对象没有被引用时会被GC回收，当对象创建过多时，GC会有一定压力，所以为了避免临时对象直接分配到堆上，JVM可以通过逃逸分析，将不被外部引用的对象不进行创建，采用标量替换的方式直接分配到栈上，这样可以随着栈帧的出栈而销毁，减轻GC压力<br>逃逸分析 可以理解为 对象被return就代表逃逸<br>标量替换 可以理解为 将对象的成员变量拆出来，标识是哪个对象的</p>
-<h4 id="5-常量池的分类"><a href="#5-常量池的分类" class="headerlink" title="5.常量池的分类"></a>5.常量池的分类</h4><p><strong>class常量池</strong><br>存放编译期间的字面量和符号引用<br><strong>运行时常量池</strong><br>在jvm运行期间，会将字符串常量池的静态数据加载到方法区<br><strong>全局常量池</strong><br>存放字符串的引用值<br><strong>字符串常量池</strong><br>用于缓存字符串<br>1)当以字符串常量的方式创建字符串，会先从常量池中查找，如果找到就返回其引用，否则在常量池中创建并返回引用<br>2)当以new的方式创建字符串，无论常量池中是否存在字符串引用，都会在堆内存中创建一个字符串对象并返回引用</p>
-<h4 id="6-判断垃圾算法"><a href="#6-判断垃圾算法" class="headerlink" title="6.判断垃圾算法"></a>6.判断垃圾算法</h4><p>引用计数法<br>每个对象维护一个计数器 被引用+1 不被引用-1 但是无法解决循环依赖问题<br>可达性分析法<br>从gc root出发，通过引用对象图，标记出所有非垃圾对象，清理未被标记的对象</p>
-<h4 id="7-哪些对象可以作为gc-root"><a href="#7-哪些对象可以作为gc-root" class="headerlink" title="7.哪些对象可以作为gc root"></a>7.哪些对象可以作为gc root</h4><p>虚拟机栈引用的对象<br>静态属性引用的对象<br>常量引用的对象<br>本地方法栈中jni引用的对象<br>持有同步锁的对象，spring bean</p>
-<h4 id="8-jvm组成部分"><a href="#8-jvm组成部分" class="headerlink" title="8.jvm组成部分"></a>8.jvm组成部分</h4><p>两个系统<br>类加载子系统-将字节码文件加载到jvm内存中<br>字节码执行引擎-负责gc 执行字节码文件指令和修改程序计数器的值<br>两个组件<br>运行时数据区(即jvm内存)<br>本地接口(JNI-Java native interface)</p>
-<h4 id="9-jvm类加载过程"><a href="#9-jvm类加载过程" class="headerlink" title="9.jvm类加载过程"></a>9.jvm类加载过程</h4><p>分为7个阶段<br><strong>加载 链接(验证 准备 解析) 初始化 使用 卸载</strong><br><strong>加载</strong><br>将字节码文件加载到运行时的数据区的方法区(即jvm内存的方法区)<br><strong>验证</strong><br>对字节码进行校验，包括文件格式验证、元数据验证、字节码验证和符号引用验证<br>如魔数、主次版本号<br><strong>准备</strong><br>将类中的静态变量分配空间并设置默认值<br><strong>解析</strong><br>将符号引用变为直接引用<br>符号引用在字节码文件中的以字符串的形式表示的<br>直接引用是指向内存的实际对象或函数的指针<br><strong>初始化</strong><br>执行类构造器方法，执行完成后类被初始化为可执行的状态，类的静态变量被正确赋值及静态代码块执行完毕</p>
-<h4 id="10-哪些情况下类被卸载"><a href="#10-哪些情况下类被卸载" class="headerlink" title="10.哪些情况下类被卸载"></a>10.哪些情况下类被卸载</h4><p>垃圾收集时，如果类的Class对象没有被任何引用指向，即无法通过反射访问该类。则类会被垃圾收集器回收，导致类被卸载<br>程序退出时，Java虚拟机会退出卸载所有类<br>当类的加载器被回收<br>当前类的所有对象实例都被回收</p>
-<h4 id="11-Java-oom类型"><a href="#11-Java-oom类型" class="headerlink" title="11.Java oom类型"></a>11.Java oom类型</h4><p>java heap space对象过多，过大或堆内存泄露导致的内存不足<br>unable to create native thread 创建过多线程<br>PermGen space &#x2F; Metaspace 存储类的字节码和字符串常量池的永生 代内存满了 &#x2F; 类数量加载过多或类信息  占用空间过多<br>Direct buffer memory 使用Java的nio(非阻塞I&#x2F;O)直接内存并  且超过–Xx:MaxDirectMemory参数设定的最大值<br>gc overhead limit exceeded jvm花费大量时间进行垃圾回收且回收  空间小  垃圾回收频繁 无法解决内存问题</p>
-<p>stackoverflow栈溢出是线程栈空间不足不会导致oom，发生在函数递归调用过深或局部变量占用太大超过栈的容量限制</p>
-<h4 id="12-gc-garbage-collection"><a href="#12-gc-garbage-collection" class="headerlink" title="12.gc(garbage collection)"></a>12.gc(garbage collection)</h4><p><strong>新生代gcminor gc</strong><br>   新创建的对象加入时，新时代空间不足 触发新时代gc<br><strong>老年代gcmajor gc</strong><br>   经过gc后仍存活的对象进入老年代导致老年代空间不足触发老年代gc<br><strong>全局gcfull gc</strong><br>   永久代空间不足 手动触发gc</p>
-<h4 id="13-jvm区域划分"><a href="#13-jvm区域划分" class="headerlink" title="13.jvm区域划分"></a>13.jvm区域划分</h4><p>堆 元空间(方法区) 本地方法区 虚拟机栈 程序计数器<br>堆分为新时代和老年代<br>线程共享的区域:堆 元空间<br>线程私有的区域:本地方法区 虚拟机栈 程序计数器<br>堆分为新生代和老年代，新手代分为 eden(伊甸区)和s0 s1(两个存活区)，占比为8:1:1</p>
-<h4 id="14-垃圾回收器有哪些"><a href="#14-垃圾回收器有哪些" class="headerlink" title="14.垃圾回收器有哪些"></a>14.垃圾回收器有哪些</h4><p><strong>1)单线程&#x2F;串行回收器</strong><br>serial回收器<br>serial old回收器<br><strong>2)多线程&#x2F;并行回收器</strong><br>parallel<br>parallel old<br>parnew与cms搭配使用<br><strong>3)多线程&#x2F;响应时间优先的并发回收器</strong><br>cms(concurrent mark sweep)<br>g1(garbage–first)</p>
-<h4 id="15-cms和g1特点"><a href="#15-cms和g1特点" class="headerlink" title="15.cms和g1特点"></a>15.cms和g1特点</h4><p><strong>CMS特点(jdk1.5)</strong><br>并发收集 低停顿<br>避免老年代出现长时间卡顿(stw)<br><strong>工作流程</strong><br>   初始标记 并发标记 并发预清理<br>   重新标记 并发清除 并发重置<br>   初始标记和重新标记需要stw<br><strong>无法清理浮动垃圾</strong><br>    并发标记和并发清理阶段，用户线程继续运行会有新的垃圾对象产生，这一部分垃圾对象是在标记过程结束后产生的CMS无法在当次收集中处理掉它们，需要留到下一次垃圾收集时再清理掉,这一部分垃圾称为“浮动垃圾”<br>使用标记清除算法，会产生大量空间碎片<br><strong>并发模式失败(concurrent mode failure)</strong><br> 1)cms在并发标记过程在发现大量对象需要晋升到老年代且老年代空间不足以容纳这些对象时会触发cmf并发阶段未完成<br> 2)cms没能在并发阶段内完成预取工作，   为了防止oom 需要进行full gc会stw，无法进行并行清理<br> 3)由于在垃圾回收阶段用户线程还在并发 运行，那就还需要预留足够的内存空间提供给用户线程使用，因此CMS不能像其他回收器那样等到老年代几乎完全被填满了再进行回收，必须预留一部分空间供并发回收时的程序运行使用。默认情况下，当老年代使用了 92% 的空间后就会触发 CMS 垃圾回收，这个值通过-XXCMSInitiating<br>OccupancyFraction参数来设置。</p>
-<h4 id="16-cms在并发标记阶段的多标和漏标"><a href="#16-cms在并发标记阶段的多标和漏标" class="headerlink" title="16.cms在并发标记阶段的多标和漏标"></a>16.cms在并发标记阶段的多标和漏标</h4><p>标的是非垃圾对象<br>多标(并发标记阶段)<br>多标 就是本应该是垃圾对象，但是由于用户线程还在运行，对象间的引用关系可能发生变化，所以没来及去清除存活标记<br>漏标(并发标记 重新标记阶段)<br>漏标就是新来的对象引用了GC Root链上的对象，但是由于用户线程还在运行，没来得及标记为非垃圾，被GC误清除</p>
-<h4 id="17-cms产生的内存碎片"><a href="#17-cms产生的内存碎片" class="headerlink" title="17.cms产生的内存碎片"></a>17.cms产生的内存碎片</h4><p>使用参数-xx:+UseCMSCompactAtFullCollection，让cms在执行full gc   时进行内存碎片整理<br>设置-xx:CMSFullGCsBeforeCompaction&#x3D;n 参数让cms在执行n次  不带压缩的gc后进行一次带压缩整理的full gc<br>当内存碎片严重到cms无法管理时，采用serial old执行标记 整理算法</p>
-<h4 id="18-解决cms漏标问题"><a href="#18-解决cms漏标问题" class="headerlink" title="18.解决cms漏标问题"></a>18.解决cms漏标问题</h4><p>三色标记法<br>写屏障<br>增加重新标记阶段的暂停时间<br>调整cms触发的阈值</p>
-<h4 id="19-cms三色标记"><a href="#19-cms三色标记" class="headerlink" title="19.cms三色标记"></a>19.cms三色标记</h4><p><strong>黑色</strong><br>所有引用扫描过<br><strong>白色</strong><br>未被访问过<br><strong>灰色</strong><br>访问过，但至少一个对象的引用没有被扫描过</p>
-<h4 id="20-cms三色标记法的作用"><a href="#20-cms三色标记法的作用" class="headerlink" title="20.cms三色标记法的作用"></a>20.cms三色标记法的作用</h4><p>用来解决漏标问题<br>分为增量更新和原始快照<br>增量更新是通过记录下黑色对象新增的白色对象引用关系，将黑色对象回退到灰色对象，重新深度扫描一次，一般用于重新标记阶段<br>原始快照是通过记录下灰色对象删除的白色对象的引用关系，在后续的并发标记或重新标记阶段可能会被重新考虑，以灰色对象为根简单扫描一下确保不会漏标，将白色对象标记为黑色对象，当作浮动垃圾处理，等待下一轮Gc</p>
-<h4 id="21-G1特点-jdk1-7"><a href="#21-G1特点-jdk1-7" class="headerlink" title="21.G1特点(jdk1.7)"></a>21.G1特点(jdk1.7)</h4><p><strong>分代收集</strong><br>   将堆划分成多个大小相等的独立 Region区域(2048个)<br><strong>并行与并发</strong><br> 使用多线程进行垃圾回收并尽量减少stw的停顿时间，其他用户线程进行运行<br><strong>空间整合</strong><br>   从整体看，基于标记-整理算法     从局部看，基于标记－复制算法<br><strong>可预测的停顿</strong><br>   G1跟踪各个Region的回收获得的空间大小和回收所需要的经验值，维护一个优先列表<br><strong>运行流程</strong><br>   初始标记 并发标记 最终标记 筛选回收<br>   初始标记 和 CMS的初始标记 一样<br>   并发标记 和 CMS的并发标记 一样<br>   最终标记 和 CMS的重新标记 一样，但<br>   是这里对于 漏标 的对象采用 原始快照的方式进行处理<br>使用humogous区存放大对象，如果humogous存放不下那么会使用多个region区进行存放<br><strong>筛选回收</strong><br>stw时对未标记的region进行清理，根据每个region区域回收价值和成本进行排序<br>根据用户预期停顿时间来选择合适的回收方式，不会回收所有垃圾对象，考虑到预期停顿时间，只会回收接近预取停顿时间的region，其余region等待下一次gc</p>
-<h4 id="22-jdk8之后出现的gc"><a href="#22-jdk8之后出现的gc" class="headerlink" title="22.jdk8之后出现的gc"></a>22.jdk8之后出现的gc</h4><p><strong>epsilon(jdk11)</strong><br>1)它是一个“被动”的收集器，不会执行任何实际的垃圾收集工作，而是当应用程序请求进行垃圾收集时，直接退出程序。它只负责分配内存，并不回收内存。当堆内存耗尽之后，JVM 直接因为 OutOf<br>Memory而终止Epsilon的主要用途是用于性能测试和故障排查，帮助开发者确定应用程序的垃圾收集开销是否过大<br>2)适合运行时间很短的程序，比如命令行程序，定期执行的简单任务<br>3)对延迟和吞吐量很敏感的程序。回收垃圾的操作会带来延迟，Epsilon 完全避免了这些延迟<br><strong>zgc(jdk11)</strong><br>ZGC（Z Garbage Collector）是一款低延迟垃圾收集器，其设计目标是实现可预测的、小于10毫秒的停顿时间。ZGC采用了基于颜色的指针追踪技术，以及并发处理等方式，从而实现了低延迟和高吞吐量的平衡。</p>
-<h4 id="23-垃圾收集器的核心指标，设计者追求什么"><a href="#23-垃圾收集器的核心指标，设计者追求什么" class="headerlink" title="23.垃圾收集器的核心指标，设计者追求什么"></a>23.垃圾收集器的核心指标，设计者追求什么</h4><p>吞吐量<br>暂停时间<br>内存占用<br>追求在延迟可控的情况下，获得尽可能高的吞吐量，追求全功能收集器</p>
-<h4 id="24-什么是STW"><a href="#24-什么是STW" class="headerlink" title="24.什么是STW"></a>24.什么是STW</h4><p>STW 就是stop the world，会暂停所有用户线程来进行GC，对于暂停的时间与垃圾收集器有关<br>年轻代的Minor GC(Young GC) 几乎无感觉<br>老年代的Full GC可能会感觉到卡顿一下</p>
-<h4 id="25-为什么要进行STW"><a href="#25-为什么要进行STW" class="headerlink" title="25.为什么要进行STW"></a>25.为什么要进行STW</h4><p>STW 主要是为了更好的维护引用对象图来进行GC，如果不进行STW，用户线程还在进行着，可能一些对象还没来得及被标记就被GC了，这个是比较严重的问题</p>
-<h4 id="26-区分并发与并行的区别："><a href="#26-区分并发与并行的区别：" class="headerlink" title="26.区分并发与并行的区别："></a>26.区分并发与并行的区别：</h4><p>并行清理只是一个概念，是指多个垃圾回收线程同时运行，来清理垃圾，此时没有任何用户线程处于工作状态<br>而并发清理是只有一个垃圾回收线程运行，其他用户线程依然处于工作状态，并会源源不断地产生浮动垃圾，比如CMS就需要进行并发清理</p>
-<h4 id="27-jvm调优"><a href="#27-jvm调优" class="headerlink" title="27.jvm调优"></a>27.jvm调优</h4>
+<p>类装载子系统<br>类加载子系统介绍<br>1.类加载子系统负责从文件系统或是网络中加载.class文件，class文件在文件开头有特定的文件标识<br>2.把加载后的class类信息存放于方法区，除了类信息之外，方法区还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）<br>3.ClassLoader只负责class文件的加载，至于它是否可以运行，则由Execution Engine决定<br>4.如果调用构造器实例化对象，则该对象存放在堆区</p>
+<p>类加载器ClassLoader角色<br>1.class file 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候是要加载到JVM当中来根据这个文件实例化出n个一模一样的实例<br>2.class file加载到JVM中，被称为DNA元数据模板<br>3.在.class文件 –&gt; JVM –&gt; 最终成为元数据模板，此过程就要一个运输工具（类装载器Class Loader），扮演一个快递员的角色</p>
+<p>类加载的执行过程<br>加载<br>加载是类加载的第一个阶段。有两种时机会触发类加载：<br>预加载<br>虚拟机启动时加载，加载的是JAVA_HOME&#x2F;lib&#x2F;下的rt.jar下的.class文件，这个jar包里面的内容是程序运行时非常常常用到的，像java.lang.*、java.util.、 java.io. 等等，因此随着虚拟机一起加载。<br>运行时加载<br>虚拟机在用到一个.class文件的时候，会先去内存中查看一下这个.class文件有没有被加载，如果没有就会按照类的全限定名来加载这个类。<br>链接<br>链接包含三个步骤： 分别是 验证Verification , 准备Preparation , 解析Resolution 三个过程。<br>验证Verification<br>连接阶段的第一步，这一阶段的目的是为了确保.class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。<br>准备Preparation<br>准备阶段是正式为类变量分配内存并设置其初始值的阶段，这些变量所使用的内存都将在方法区中分配。<br>解析Resolution<br>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。<br>初始化<br>类的初始化阶段是类加载过程的最后一个步骤， 之前介绍的几个类加载的动作里， 除了在加载阶段用户应用程序可以通过自定义类加载器的方式局部参与外， 其余动作都完全由Java虚拟机来主导控制。 直到初始化阶段， Java虚拟机才真正开始执行类中编写的Java程序代码， 将主导权移交给应用程序。</p>
+<p>类加载器分类<br>jvm支持两种类型的加载器，分别是引导类加载器和自定义加载器<br>引导类加载器是由c&#x2F;c++实现的，自定义加载器是由java实现的<br>引导类加载器BootStrapClassLoader、自定义类加载器(Extension Class Loader、System Class Loader、User-Defined ClassLoader）</p>
+<p>启动类加载器<br>这个类加载器使用c&#x2F;c++实现，嵌套在jvm内部<br>它用来加载Java的核心类库（JAVA_HOME&#x2F;jre&#x2F;lib&#x2F;rt.jar、resource.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类<br>并不继承自java.lang.ClassLoader，没有父加载器</p>
+<p>扩展类加载器<br>java语言编写，由sun.misc.Launcher$ExtClassLoader实现<br>从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre&#x2F;lib&#x2F;ext子目录（扩展目录）下加载类库。如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载，派生于 ClassLoader，父类加载器为启动类加载器</p>
+<p>系统类加载器<br>java语言编写，由 sun.misc.Lanucher$AppClassLoader 实现<br>该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载的，它负责加载环境变量classpath或系统属性java.class.path 指定路径下的类库，派生于 ClassLoader<br>父类加载器为扩展类加载器<br>通过 ClassLoader#getSystemClassLoader() 方法可以获取到该类加载器</p>
+<p>用户自定义类加载器<br>在日常的Java开发中，类加载几乎是由三种加载器配合执行的，在必要时我们还可以自定义类加载器，来定制类的加载方式。</p>
+<p>双亲委派模型<br>双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即 ClassNotFoundException ），子加载器才会尝试自己去加载</p>
+
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
                 <source type="audio/mpeg" src="">
