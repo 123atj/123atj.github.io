@@ -208,7 +208,8 @@
   <entry>
     <title></title>
     <url>/2024/05/15/RocketMQ/</url>
-    <content><![CDATA[<p>title: RocketMQ<br>date: 2023-05-15 22:23:43<br>tags: “RocketMQ介绍”<br>​—</p>
+    <content><![CDATA[<hr>
+<p>title: RocketMQ<br>date: 2023-05-15 22:23:43<br>tags: “RocketMQ介绍”<br>​—</p>
 <p>RocketMQ是一款高性能、高吞吐量、低延迟、高可用、高可靠（具备金融级稳定性）的基于队列模型的分布式消息中间件<br>RoctetMQ 基本架构<br>NameServer，Broker，Producer 生产者，Consumer 消费者，它们对应了：发现、发、存、收，为了保证高可用，一般每一部分都是集群部署的<br>NameServer<br>NameServer是一个无状态的服务器，角色类似于 Kafka 使用的 Zookeeper，但比 Zookeeper 更轻量。<br>特点：<br>每个 NameServer 结点之间是相互独立，彼此没有任何信息交互。<br>Nameserver 被设计成几乎是无状态的，通过部署多个结点来标识自己是一个伪集群，Producer 在发送消息前从 NameServer 中获取 Topic 的路由信息也就是发往哪个 Broker，Consumer 也会定时从 NameServer 获取 Topic 的路由信息，Broker 在启动时会向 NameServer 注册，并定时进行心跳连接，且定时同步维护的 Topic 到 NameServer。<br>功能：<br>1、和 Broker 结点保持长连接。<br>2、维护 Topic 的路由信息。</p>
 <p>#Broker<br>消息存储和中转角色，负责存储和转发消息。<br>Broker 内部维护着一个个 Consumer Queue，用来存储消息的索引，真正存储消息的地方是 CommitLog（日志文件）。<br>RocketMQ存储-图片来源官网<br>RocketMQ存储-图片来源官网<br>单个 Broker 与所有的 Nameserver 保持着长连接和心跳，并会定时将 Topic 信息同步到 NameServer，和 NameServer 的通信底层是通过 Netty 实现的。</p>
 <p>#Producer<br>消息生产者，业务端负责发送消息，由用户自行实现和分布式部署。<br>Producer由用户进行分布式部署，消息由Producer通过多种负载均衡模式发送到Broker集群，发送低延时，支持快速失败。</p>
