@@ -71,15 +71,32 @@
         <div class="content markdown">
             <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>类装载子系统<br>类加载子系统介绍<br>1.类加载子系统负责从文件系统或是网络中加载.class文件，class文件在文件开头有特定的文件标识<br>2.把加载后的class类信息存放于方法区，除了类信息之外，方法区还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）<br>3.ClassLoader只负责class文件的加载，至于它是否可以运行，则由Execution Engine决定<br>4.如果调用构造器实例化对象，则该对象存放在堆区</p>
-<p>类加载器ClassLoader角色<br>1.class file 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候是要加载到JVM当中来根据这个文件实例化出n个一模一样的实例<br>2.class file加载到JVM中，被称为DNA元数据模板<br>3.在.class文件 –&gt; JVM –&gt; 最终成为元数据模板，此过程就要一个运输工具（类装载器Class Loader），扮演一个快递员的角色</p>
-<p>类加载的执行过程<br>加载<br>加载是类加载的第一个阶段。有两种时机会触发类加载：<br>预加载<br>虚拟机启动时加载，加载的是JAVA_HOME&#x2F;lib&#x2F;下的rt.jar下的.class文件，这个jar包里面的内容是程序运行时非常常常用到的，像java.lang.*、java.util.、 java.io. 等等，因此随着虚拟机一起加载。<br>运行时加载<br>虚拟机在用到一个.class文件的时候，会先去内存中查看一下这个.class文件有没有被加载，如果没有就会按照类的全限定名来加载这个类。<br>链接<br>链接包含三个步骤： 分别是 验证Verification , 准备Preparation , 解析Resolution 三个过程。<br>验证Verification<br>连接阶段的第一步，这一阶段的目的是为了确保.class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。<br>准备Preparation<br>准备阶段是正式为类变量分配内存并设置其初始值的阶段，这些变量所使用的内存都将在方法区中分配。<br>解析Resolution<br>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。<br>初始化<br>类的初始化阶段是类加载过程的最后一个步骤， 之前介绍的几个类加载的动作里， 除了在加载阶段用户应用程序可以通过自定义类加载器的方式局部参与外， 其余动作都完全由Java虚拟机来主导控制。 直到初始化阶段， Java虚拟机才真正开始执行类中编写的Java程序代码， 将主导权移交给应用程序。</p>
-<p>类加载器分类<br>jvm支持两种类型的加载器，分别是引导类加载器和自定义加载器<br>引导类加载器是由c&#x2F;c++实现的，自定义加载器是由java实现的<br>引导类加载器BootStrapClassLoader、自定义类加载器(Extension Class Loader、System Class Loader、User-Defined ClassLoader）</p>
-<p>启动类加载器<br>这个类加载器使用c&#x2F;c++实现，嵌套在jvm内部<br>它用来加载Java的核心类库（JAVA_HOME&#x2F;jre&#x2F;lib&#x2F;rt.jar、resource.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类<br>并不继承自java.lang.ClassLoader，没有父加载器</p>
-<p>扩展类加载器<br>java语言编写，由sun.misc.Launcher$ExtClassLoader实现<br>从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre&#x2F;lib&#x2F;ext子目录（扩展目录）下加载类库。如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载，派生于 ClassLoader，父类加载器为启动类加载器</p>
-<p>系统类加载器<br>java语言编写，由 sun.misc.Lanucher$AppClassLoader 实现<br>该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载的，它负责加载环境变量classpath或系统属性java.class.path 指定路径下的类库，派生于 ClassLoader<br>父类加载器为扩展类加载器<br>通过 ClassLoader#getSystemClassLoader() 方法可以获取到该类加载器</p>
-<p>用户自定义类加载器<br>在日常的Java开发中，类加载几乎是由三种加载器配合执行的，在必要时我们还可以自定义类加载器，来定制类的加载方式。</p>
-<p>双亲委派模型<br>双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即 ClassNotFoundException ），子加载器才会尝试自己去加载</p>
+<h3 id="类装载子系统"><a href="#类装载子系统" class="headerlink" title="类装载子系统"></a>类装载子系统</h3><h5 id="类加载子系统介绍"><a href="#类加载子系统介绍" class="headerlink" title="类加载子系统介绍"></a>类加载子系统介绍</h5><p>1.类加载子系统负责从文件系统或是网络中加载.class文件，class文件在文件开头有特定的文件标识</p>
+<p>2.把加载后的class类信息存放于方法区，除了类信息之外，方法区还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）</p>
+<p>3.ClassLoader只负责class文件的加载，至于它是否可以运行，则由Execution Engine决定</p>
+<p>4.如果调用构造器实例化对象，则该对象存放在堆区</p>
+<h4 id="类加载器ClassLoader角色"><a href="#类加载器ClassLoader角色" class="headerlink" title="类加载器ClassLoader角色"></a>类加载器ClassLoader角色</h4><p>1.class file 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候是要加载到JVM当中来根据这个文件实例化出n个一模一样的实例</p>
+<p>2.class file加载到JVM中，被称为DNA元数据模板</p>
+<p>3.在.class文件 –&gt; JVM –&gt; 最终成为元数据模板，此过程就要一个运输工具（类装载器Class Loader），扮演一个快递员的角色</p>
+<h4 id="类加载的执行过程"><a href="#类加载的执行过程" class="headerlink" title="类加载的执行过程"></a>类加载的执行过程</h4><h5 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h5><p>加载是类加载的第一个阶段。有两种时机会触发类加载：</p>
+<h6 id="预加载"><a href="#预加载" class="headerlink" title="预加载"></a>预加载</h6><p>虚拟机启动时加载，加载的是JAVA_HOME&#x2F;lib&#x2F;下的rt.jar下的.class文件，这个jar包里面的内容是程序运行时非常常常用到的，像java.lang.*、java.util.、 java.io. 等等，因此随着虚拟机一起加载。</p>
+<h6 id="运行时加载"><a href="#运行时加载" class="headerlink" title="运行时加载"></a>运行时加载</h6><p>虚拟机在用到一个.class文件的时候，会先去内存中查看一下这个.class文件有没有被加载，如果没有就会按照类的全限定名来加载这个类。</p>
+<h5 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h5><p>链接包含三个步骤： 分别是 验证Verification , 准备Preparation , 解析Resolution 三个过程。</p>
+<h5 id="验证Verification"><a href="#验证Verification" class="headerlink" title="验证Verification"></a>验证Verification</h5><p>连接阶段的第一步，这一阶段的目的是为了确保.class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。</p>
+<h5 id="准备Preparation"><a href="#准备Preparation" class="headerlink" title="准备Preparation"></a>准备Preparation</h5><p>准备阶段是正式为类变量分配内存并设置其初始值的阶段，这些变量所使用的内存都将在方法区中分配。</p>
+<h5 id="解析Resolution"><a href="#解析Resolution" class="headerlink" title="解析Resolution"></a>解析Resolution</h5><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
+<h5 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h5><p>类的初始化阶段是类加载过程的最后一个步骤， 之前介绍的几个类加载的动作里， 除了在加载阶段用户应用程序可以通过自定义类加载器的方式局部参与外， 其余动作都完全由Java虚拟机来主导控制。 </p>
+<p>直到初始化阶段， Java虚拟机才真正开始执行类中编写的Java程序代码， 将主导权移交给应用程序。</p>
+<h4 id="类加载器分类"><a href="#类加载器分类" class="headerlink" title="类加载器分类"></a>类加载器分类</h4><p>jvm支持两种类型的加载器，分别是引导类加载器和自定义加载器</p>
+<p>引导类加载器是由c&#x2F;c++实现的，自定义加载器是由java实现的</p>
+<p>引导类加载器BootStrapClassLoader</p>
+<p>自定义类加载器(Extension Class Loader、System Class Loader、User-Defined ClassLoader）</p>
+<h5 id="启动类加载器"><a href="#启动类加载器" class="headerlink" title="启动类加载器"></a>启动类加载器</h5><p>这个类加载器使用c&#x2F;c++实现，嵌套在jvm内部<br>它用来加载Java的核心类库（JAVA_HOME&#x2F;jre&#x2F;lib&#x2F;rt.jar、resource.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类<br>并不继承自java.lang.ClassLoader，没有父加载器</p>
+<h5 id="扩展类加载器"><a href="#扩展类加载器" class="headerlink" title="扩展类加载器"></a>扩展类加载器</h5><p>java语言编写，由sun.misc.Launcher$ExtClassLoader实现<br>从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre&#x2F;lib&#x2F;ext子目录（扩展目录）下加载类库。如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载，派生于 ClassLoader，父类加载器为启动类加载器</p>
+<h5 id="系统类加载器"><a href="#系统类加载器" class="headerlink" title="系统类加载器"></a>系统类加载器</h5><p>java语言编写，由 sun.misc.Lanucher$AppClassLoader 实现<br>该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载的，它负责加载环境变量classpath或系统属性java.class.path 指定路径下的类库，派生于 ClassLoader<br>父类加载器为扩展类加载器<br>通过 ClassLoader#getSystemClassLoader() 方法可以获取到该类加载器</p>
+<h5 id="用户自定义类加载器"><a href="#用户自定义类加载器" class="headerlink" title="用户自定义类加载器"></a>用户自定义类加载器</h5><p>在日常的Java开发中，类加载几乎是由三种加载器配合执行的，在必要时我们还可以自定义类加载器，来定制类的加载方式。</p>
+<h4 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h4><p>双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即 ClassNotFoundException ），子加载器才会尝试自己去加载</p>
+<p>​                                                                                                                                                                          </p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">

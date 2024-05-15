@@ -71,14 +71,60 @@
         <div class="content markdown">
             <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<h4 id="Hashmap底层结构"><a href="#Hashmap底层结构" class="headerlink" title="Hashmap底层结构"></a>Hashmap底层结构</h4><p>JDK1.8 之前 HashMap 底层是 数组和链表 JDK1.8HashMap 底层是 数组和链表&#x2F;红黑树<br>当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间。</p>
-<p>红黑树的特点<br>1.红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2.与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3.解决链表长度过长</p>
-<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>哈希冲突是指两个不同的Key经过哈希函数计算后得到相同的哈希值，从而被映射到哈希表的同一个位置。由于哈希表的大小是有限的，而可能的键值范围理论上是无限的，所以哈希冲突几乎是不可避免的<br>解决哈希冲突的方法<br>1.开放地址法:找到空的数组下标  分为线性探测 和二次探测 和双重散列<br>2.再哈希：使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)：如果哈希值一样，将节点封装链表节点存储在数组中对应位置的链表；如果是红黑树则封装为红黑树节点进行存储<br>4.建立公共溢出区：所有冲突的元素都存放在一个共享的溢出表中</p>
-<h4 id="HashMap扩容流程"><a href="#HashMap扩容流程" class="headerlink" title="HashMap扩容流程"></a>HashMap扩容流程</h4><p>HashMap的扩容实质上就是数组的扩容，会重新开辟一份2倍原数组容量的数组将老数组的元素转移过来<br>在JDK 7下会将老数组中的元素重新进行hash值计算得到新数组的下标，然后放到对应数组的槽位的链表上，扩容的目的主要是为了解决链表过长的问题<br>在JDK 8下也会将老数组中元素的数组下标重新计算<br>如果是红黑树对应的槽位，会通过低位和高位(依旧是老位置的元素和新位置的元素)拆分成两个子链表存放到不同的槽位，当数组长度达到64且链表长度达到8时转化为红黑树<br>如果是链表对应的槽位，操作和JDK 7的一样</p>
-<h4 id="Hashmap扩容存在的问题"><a href="#Hashmap扩容存在的问题" class="headerlink" title="Hashmap扩容存在的问题"></a>Hashmap扩容存在的问题</h4><p>jdk1.7<br>死循环问题<br>jdk1.7中，采用的是头插法，用一个e指针表示当前要扩容的节点，next表示接下来要扩容的节点，一直头插e更新e为next，直到e为null<br>假设现在有两个线程1和2，要扩容一个Map<br>1.线程1的局部变量e，指向了a节点，next指向b节点<br>2.线程2的局部变量也是如此，此时线程2先进行扩容，由于是头插法，最终结果变成了 b-&gt;a<br>3.但此时来到线程1先进行，局部变量不会受改变，e还是指向a，next还是b，所以把a头插，并且更新e为next，也就变成了b<br>4.线程1继续头插b，没问题，结果变成了[b-&gt;a]，看起来是没问题了，但是接下来判断e还没有next：<br>5.发现e的next是a，又要继续头插a，插完a之后，发现a的next又是b，此时造成死循环<br>数据丢失问题<br>对原数组元素进行rehash，在多线程环境下，如果两个线程同时尝试将元素插入到同一个桶的新位置，可能会导致其中一个线程插入的数据被另一个线程覆盖，从而发生数据丢失，因此HashMap是非线程安全的<br>jdk1.8<br>在扩容时采用了尾插法，降低了死循环发生的概率，但在扩容时仍然可能数据丢失</p>
-<h4 id="Hashmap的put流程"><a href="#Hashmap的put流程" class="headerlink" title="Hashmap的put流程"></a>Hashmap的put流程</h4><p>首先基于hash值计算得到数组下标<br>如果下标元素为空，在JDK 7下会将K-V封装成Entry对象，在JDK 8下会封装成Node对象，然后放到数组对应的槽位<br>如果下标元素不为空<br>在JDK 7下会先判断是否需要扩容，如果需要就优先扩容，然后采用头插法插入当前槽位的链表上，如果Key相同就更新Value<br>在JDK 8下不会先判断是否需要扩容，而是先判断节点是链表节点还是红黑树节点，最后再看扩容<br>如果是链表节点，将K-V封装成链表节点，采用尾插法插入当前槽位的链表上，如果Key相同就更新Value，当数组长度达到64且链表长度达到8就会将链表转化为红黑树来提升查询速度<br>如果是红黑树节点，将K-V封装成红黑树节点放到红黑树上，如果Key相同就更新Value，当红黑树节点数达到6时会退化成链表</p>
-<h4 id="如何解决hashmap的线程安全问题"><a href="#如何解决hashmap的线程安全问题" class="headerlink" title="如何解决hashmap的线程安全问题"></a>如何解决hashmap的线程安全问题</h4><p>1.使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2.加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3.使用ConcurrentHashmap</p>
-<h4 id="Hashmap如何确定key的位置"><a href="#Hashmap如何确定key的位置" class="headerlink" title="Hashmap如何确定key的位置"></a>Hashmap如何确定key的位置</h4><p>1.先使用hashcode()求出key的哈希值<br>2.使用扰动函数计算哈希值<br>3.通过 hash值 &amp; (n-1) n是数组长度</p>
+<h4 id="Hashmap底层结构"><a href="#Hashmap底层结构" class="headerlink" title="Hashmap底层结构"></a>Hashmap底层结构</h4><p>JDK1.8 之前 HashMap 底层是 数组和链表 </p>
+<p>JDK1.8HashMap 底层是 数组和链表&#x2F;红黑树</p>
+<p>当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间。</p>
+<h5 id="红黑树的特点"><a href="#红黑树的特点" class="headerlink" title="红黑树的特点"></a>红黑树的特点</h5><p>1.红黑树具有自平衡性  树的高度为log(n)，查询效率高</p>
+<p>2.与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低</p>
+<p>3.解决链表长度过长</p>
+<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>哈希冲突是指两个不同的Key经过哈希函数计算后得到相同的哈希值，从而被映射到哈希表的同一个位置。由于哈希表的大小是有限的，而可能的键值范围理论上是无限的，所以哈希冲突几乎是不可避免的</p>
+<h5 id="解决哈希冲突的方法"><a href="#解决哈希冲突的方法" class="headerlink" title="解决哈希冲突的方法"></a>解决哈希冲突的方法</h5><p>1.开放地址法:找到空的数组下标  分为线性探测 和二次探测 和双重散列   </p>
+<p>2.再哈希：使用其他哈希函数重新计算哈希值 </p>
+<p>3.链地址法(默认)：如果哈希值一样，将节点封装链表节点存储在数组中对应位置的链表；如果是红黑树则封装为红黑树节点进行存储</p>
+<p>4.建立公共溢出区：所有冲突的元素都存放在一个共享的溢出表中</p>
+<h4 id="HashMap扩容流程"><a href="#HashMap扩容流程" class="headerlink" title="HashMap扩容流程"></a>HashMap扩容流程</h4><p>HashMap的扩容实质上就是数组的扩容，会重新开辟一份2倍原数组容量的数组将老数组的元素转移过来</p>
+<ul>
+<li>在JDK 7下会将老数组中的元素重新进行hash值计算得到新数组的下标，然后放到对应数组的槽位的链表上，扩容的目的主要是为了解决链表过长的问题</li>
+<li>在JDK 8下也会将老数组中元素的数组下标重新计算<ul>
+<li>如果是红黑树对应的槽位，会通过低位和高位(依旧是老位置的元素和新位置的元素)拆分成两个子链表存放到不同的槽位，当数组长度达到64且链表长度达到8时转化为红黑树</li>
+<li>如果是链表对应的槽位，操作和JDK 7的一样</li>
+</ul>
+</li>
+</ul>
+<h4 id="Hashmap扩容存在的问题"><a href="#Hashmap扩容存在的问题" class="headerlink" title="Hashmap扩容存在的问题"></a>Hashmap扩容存在的问题</h4><h5 id="jdk1-7"><a href="#jdk1-7" class="headerlink" title="jdk1.7"></a>jdk1.7</h5><h5 id="死循环问题"><a href="#死循环问题" class="headerlink" title="死循环问题"></a>死循环问题</h5><ul>
+<li>jdk1.7中，采用的是头插法，用一个e指针表示当前要扩容的节点，next表示接下来要扩容的节点，一直头插e更新e为next，直到e为null</li>
+<li>假设现在有两个线程1和2，要扩容一个Map<ul>
+<li>1.线程1的局部变量e，指向了a节点，next指向b节点</li>
+<li>2.线程2的局部变量也是如此，此时线程2先进行扩容，由于是头插法，最终结果变成了 b-&gt;a</li>
+<li>3.但此时来到线程1先进行，局部变量不会受改变，e还是指向a，next还是b，所以把a头插，并且更新e为next，也就变成了b</li>
+<li>4.线程1继续头插b，没问题，结果变成了[b-&gt;a]，看起来是没问题了，但是接下来判断e还没有next</li>
+<li>5.发现e的next是a，又要继续头插a，插完a之后，发现a的next又是b，此时造成死循环</li>
+</ul>
+</li>
+</ul>
+<h5 id="数据丢失问题"><a href="#数据丢失问题" class="headerlink" title="数据丢失问题"></a>数据丢失问题</h5><ul>
+<li>对原数组元素进行rehash，在多线程环境下，如果两个线程同时尝试将元素插入到同一个桶的新位置，可能会导致其中一个线程插入的数据被另一个线程覆盖，从而发生数据丢失，因此HashMap是非线程安全的</li>
+</ul>
+<h5 id="jdk1-8"><a href="#jdk1-8" class="headerlink" title="jdk1.8"></a>jdk1.8</h5><p>在扩容时采用了尾插法，降低了死循环发生的概率，但在扩容时仍然可能数据丢失</p>
+<h4 id="Hashmap的put流程"><a href="#Hashmap的put流程" class="headerlink" title="Hashmap的put流程"></a>Hashmap的put流程</h4><ul>
+<li>首先基于hash值计算得到数组下标</li>
+<li>如果下标元素为空，在JDK 7下会将K-V封装成Entry对象，在JDK 8下会封装成Node对象，然后放到数组对应的槽位</li>
+<li>如果下标元素不为空<ul>
+<li>在JDK 7下会先判断是否需要扩容，如果需要就优先扩容，然后采用头插法插入当前槽位的链表上，如果Key相同就更新Value</li>
+<li>在JDK 8下不会先判断是否需要扩容，而是先判断节点是链表节点还是红黑树节点，最后再看扩容<ul>
+<li>如果是链表节点，将K-V封装成链表节点，采用尾插法插入当前槽位的链表上，如果Key相同就更新Value，当数组长度达到64且链表长度达到8就会将链表转化为红黑树来提升查询速度</li>
+<li>如果是红黑树节点，将K-V封装成红黑树节点放到红黑树上，如果Key相同就更新Value，当红黑树节点数达到6时会退化成链表</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="如何解决hashmap的线程安全问题"><a href="#如何解决hashmap的线程安全问题" class="headerlink" title="如何解决hashmap的线程安全问题"></a>如何解决hashmap的线程安全问题</h4><p>1.使用collections.synchronizedMap hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；</p>
+<p>2.加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock</p>
+<p>3.使用ConcurrentHashmap</p>
+<h4 id="Hashmap如何确定key的位置"><a href="#Hashmap如何确定key的位置" class="headerlink" title="Hashmap如何确定key的位置"></a>Hashmap如何确定key的位置</h4><p>1.先使用hashcode()求出key的哈希值</p>
+<p>2.使用扰动函数计算哈希值  </p>
+<p>3.通过 hash值 &amp; (n-1) n是数组长度</p>
 <p>扰动函数<br>jdk1.8  hash ^ (hash &gt;&gt;&gt; 16)<br>jdk1.7  hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->

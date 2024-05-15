@@ -5,14 +5,60 @@
     <url>/2022/04/05/HashMap/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<h4 id="Hashmap底层结构"><a href="#Hashmap底层结构" class="headerlink" title="Hashmap底层结构"></a>Hashmap底层结构</h4><p>JDK1.8 之前 HashMap 底层是 数组和链表 JDK1.8HashMap 底层是 数组和链表&#x2F;红黑树<br>当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间。</p>
-<p>红黑树的特点<br>1.红黑树具有自平衡性<br>树的高度为log(n)，查询效率高<br>2.与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低<br>3.解决链表长度过长</p>
-<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>哈希冲突是指两个不同的Key经过哈希函数计算后得到相同的哈希值，从而被映射到哈希表的同一个位置。由于哈希表的大小是有限的，而可能的键值范围理论上是无限的，所以哈希冲突几乎是不可避免的<br>解决哈希冲突的方法<br>1.开放地址法:找到空的数组下标  分为线性探测 和二次探测 和双重散列<br>2.再哈希：使用其他哈希函数重新计算哈希值<br>3.链地址法(默认)：如果哈希值一样，将节点封装链表节点存储在数组中对应位置的链表；如果是红黑树则封装为红黑树节点进行存储<br>4.建立公共溢出区：所有冲突的元素都存放在一个共享的溢出表中</p>
-<h4 id="HashMap扩容流程"><a href="#HashMap扩容流程" class="headerlink" title="HashMap扩容流程"></a>HashMap扩容流程</h4><p>HashMap的扩容实质上就是数组的扩容，会重新开辟一份2倍原数组容量的数组将老数组的元素转移过来<br>在JDK 7下会将老数组中的元素重新进行hash值计算得到新数组的下标，然后放到对应数组的槽位的链表上，扩容的目的主要是为了解决链表过长的问题<br>在JDK 8下也会将老数组中元素的数组下标重新计算<br>如果是红黑树对应的槽位，会通过低位和高位(依旧是老位置的元素和新位置的元素)拆分成两个子链表存放到不同的槽位，当数组长度达到64且链表长度达到8时转化为红黑树<br>如果是链表对应的槽位，操作和JDK 7的一样</p>
-<h4 id="Hashmap扩容存在的问题"><a href="#Hashmap扩容存在的问题" class="headerlink" title="Hashmap扩容存在的问题"></a>Hashmap扩容存在的问题</h4><p>jdk1.7<br>死循环问题<br>jdk1.7中，采用的是头插法，用一个e指针表示当前要扩容的节点，next表示接下来要扩容的节点，一直头插e更新e为next，直到e为null<br>假设现在有两个线程1和2，要扩容一个Map<br>1.线程1的局部变量e，指向了a节点，next指向b节点<br>2.线程2的局部变量也是如此，此时线程2先进行扩容，由于是头插法，最终结果变成了 b-&gt;a<br>3.但此时来到线程1先进行，局部变量不会受改变，e还是指向a，next还是b，所以把a头插，并且更新e为next，也就变成了b<br>4.线程1继续头插b，没问题，结果变成了[b-&gt;a]，看起来是没问题了，但是接下来判断e还没有next：<br>5.发现e的next是a，又要继续头插a，插完a之后，发现a的next又是b，此时造成死循环<br>数据丢失问题<br>对原数组元素进行rehash，在多线程环境下，如果两个线程同时尝试将元素插入到同一个桶的新位置，可能会导致其中一个线程插入的数据被另一个线程覆盖，从而发生数据丢失，因此HashMap是非线程安全的<br>jdk1.8<br>在扩容时采用了尾插法，降低了死循环发生的概率，但在扩容时仍然可能数据丢失</p>
-<h4 id="Hashmap的put流程"><a href="#Hashmap的put流程" class="headerlink" title="Hashmap的put流程"></a>Hashmap的put流程</h4><p>首先基于hash值计算得到数组下标<br>如果下标元素为空，在JDK 7下会将K-V封装成Entry对象，在JDK 8下会封装成Node对象，然后放到数组对应的槽位<br>如果下标元素不为空<br>在JDK 7下会先判断是否需要扩容，如果需要就优先扩容，然后采用头插法插入当前槽位的链表上，如果Key相同就更新Value<br>在JDK 8下不会先判断是否需要扩容，而是先判断节点是链表节点还是红黑树节点，最后再看扩容<br>如果是链表节点，将K-V封装成链表节点，采用尾插法插入当前槽位的链表上，如果Key相同就更新Value，当数组长度达到64且链表长度达到8就会将链表转化为红黑树来提升查询速度<br>如果是红黑树节点，将K-V封装成红黑树节点放到红黑树上，如果Key相同就更新Value，当红黑树节点数达到6时会退化成链表</p>
-<h4 id="如何解决hashmap的线程安全问题"><a href="#如何解决hashmap的线程安全问题" class="headerlink" title="如何解决hashmap的线程安全问题"></a>如何解决hashmap的线程安全问题</h4><p>1.使用collections.synchronizedMap<br>hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；<br>2.加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock<br>3.使用ConcurrentHashmap</p>
-<h4 id="Hashmap如何确定key的位置"><a href="#Hashmap如何确定key的位置" class="headerlink" title="Hashmap如何确定key的位置"></a>Hashmap如何确定key的位置</h4><p>1.先使用hashcode()求出key的哈希值<br>2.使用扰动函数计算哈希值<br>3.通过 hash值 &amp; (n-1) n是数组长度</p>
+<h4 id="Hashmap底层结构"><a href="#Hashmap底层结构" class="headerlink" title="Hashmap底层结构"></a>Hashmap底层结构</h4><p>JDK1.8 之前 HashMap 底层是 数组和链表 </p>
+<p>JDK1.8HashMap 底层是 数组和链表&#x2F;红黑树</p>
+<p>当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间。</p>
+<h5 id="红黑树的特点"><a href="#红黑树的特点" class="headerlink" title="红黑树的特点"></a>红黑树的特点</h5><p>1.红黑树具有自平衡性  树的高度为log(n)，查询效率高</p>
+<p>2.与其他avl(自平衡二叉查找树)相比 旋转次数少 使得红黑树进行插入 删除的维护成本低</p>
+<p>3.解决链表长度过长</p>
+<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>哈希冲突是指两个不同的Key经过哈希函数计算后得到相同的哈希值，从而被映射到哈希表的同一个位置。由于哈希表的大小是有限的，而可能的键值范围理论上是无限的，所以哈希冲突几乎是不可避免的</p>
+<h5 id="解决哈希冲突的方法"><a href="#解决哈希冲突的方法" class="headerlink" title="解决哈希冲突的方法"></a>解决哈希冲突的方法</h5><p>1.开放地址法:找到空的数组下标  分为线性探测 和二次探测 和双重散列   </p>
+<p>2.再哈希：使用其他哈希函数重新计算哈希值 </p>
+<p>3.链地址法(默认)：如果哈希值一样，将节点封装链表节点存储在数组中对应位置的链表；如果是红黑树则封装为红黑树节点进行存储</p>
+<p>4.建立公共溢出区：所有冲突的元素都存放在一个共享的溢出表中</p>
+<h4 id="HashMap扩容流程"><a href="#HashMap扩容流程" class="headerlink" title="HashMap扩容流程"></a>HashMap扩容流程</h4><p>HashMap的扩容实质上就是数组的扩容，会重新开辟一份2倍原数组容量的数组将老数组的元素转移过来</p>
+<ul>
+<li>在JDK 7下会将老数组中的元素重新进行hash值计算得到新数组的下标，然后放到对应数组的槽位的链表上，扩容的目的主要是为了解决链表过长的问题</li>
+<li>在JDK 8下也会将老数组中元素的数组下标重新计算<ul>
+<li>如果是红黑树对应的槽位，会通过低位和高位(依旧是老位置的元素和新位置的元素)拆分成两个子链表存放到不同的槽位，当数组长度达到64且链表长度达到8时转化为红黑树</li>
+<li>如果是链表对应的槽位，操作和JDK 7的一样</li>
+</ul>
+</li>
+</ul>
+<h4 id="Hashmap扩容存在的问题"><a href="#Hashmap扩容存在的问题" class="headerlink" title="Hashmap扩容存在的问题"></a>Hashmap扩容存在的问题</h4><h5 id="jdk1-7"><a href="#jdk1-7" class="headerlink" title="jdk1.7"></a>jdk1.7</h5><h5 id="死循环问题"><a href="#死循环问题" class="headerlink" title="死循环问题"></a>死循环问题</h5><ul>
+<li>jdk1.7中，采用的是头插法，用一个e指针表示当前要扩容的节点，next表示接下来要扩容的节点，一直头插e更新e为next，直到e为null</li>
+<li>假设现在有两个线程1和2，要扩容一个Map<ul>
+<li>1.线程1的局部变量e，指向了a节点，next指向b节点</li>
+<li>2.线程2的局部变量也是如此，此时线程2先进行扩容，由于是头插法，最终结果变成了 b-&gt;a</li>
+<li>3.但此时来到线程1先进行，局部变量不会受改变，e还是指向a，next还是b，所以把a头插，并且更新e为next，也就变成了b</li>
+<li>4.线程1继续头插b，没问题，结果变成了[b-&gt;a]，看起来是没问题了，但是接下来判断e还没有next</li>
+<li>5.发现e的next是a，又要继续头插a，插完a之后，发现a的next又是b，此时造成死循环</li>
+</ul>
+</li>
+</ul>
+<h5 id="数据丢失问题"><a href="#数据丢失问题" class="headerlink" title="数据丢失问题"></a>数据丢失问题</h5><ul>
+<li>对原数组元素进行rehash，在多线程环境下，如果两个线程同时尝试将元素插入到同一个桶的新位置，可能会导致其中一个线程插入的数据被另一个线程覆盖，从而发生数据丢失，因此HashMap是非线程安全的</li>
+</ul>
+<h5 id="jdk1-8"><a href="#jdk1-8" class="headerlink" title="jdk1.8"></a>jdk1.8</h5><p>在扩容时采用了尾插法，降低了死循环发生的概率，但在扩容时仍然可能数据丢失</p>
+<h4 id="Hashmap的put流程"><a href="#Hashmap的put流程" class="headerlink" title="Hashmap的put流程"></a>Hashmap的put流程</h4><ul>
+<li>首先基于hash值计算得到数组下标</li>
+<li>如果下标元素为空，在JDK 7下会将K-V封装成Entry对象，在JDK 8下会封装成Node对象，然后放到数组对应的槽位</li>
+<li>如果下标元素不为空<ul>
+<li>在JDK 7下会先判断是否需要扩容，如果需要就优先扩容，然后采用头插法插入当前槽位的链表上，如果Key相同就更新Value</li>
+<li>在JDK 8下不会先判断是否需要扩容，而是先判断节点是链表节点还是红黑树节点，最后再看扩容<ul>
+<li>如果是链表节点，将K-V封装成链表节点，采用尾插法插入当前槽位的链表上，如果Key相同就更新Value，当数组长度达到64且链表长度达到8就会将链表转化为红黑树来提升查询速度</li>
+<li>如果是红黑树节点，将K-V封装成红黑树节点放到红黑树上，如果Key相同就更新Value，当红黑树节点数达到6时会退化成链表</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="如何解决hashmap的线程安全问题"><a href="#如何解决hashmap的线程安全问题" class="headerlink" title="如何解决hashmap的线程安全问题"></a>如何解决hashmap的线程安全问题</h4><p>1.使用collections.synchronizedMap hashmap map &#x3D; collections.synchronizedMap(new hashmap&lt;&gt;())；</p>
+<p>2.加锁 创建锁对象<br>private final object lock &#x3D; new object()；把操作放在synchronized块中或加reentrantlock</p>
+<p>3.使用ConcurrentHashmap</p>
+<h4 id="Hashmap如何确定key的位置"><a href="#Hashmap如何确定key的位置" class="headerlink" title="Hashmap如何确定key的位置"></a>Hashmap如何确定key的位置</h4><p>1.先使用hashcode()求出key的哈希值</p>
+<p>2.使用扰动函数计算哈希值  </p>
+<p>3.通过 hash值 &amp; (n-1) n是数组长度</p>
 <p>扰动函数<br>jdk1.8  hash ^ (hash &gt;&gt;&gt; 16)<br>jdk1.7  hash ^ (hash &gt;&gt;&gt; 20)  ^ (hash &gt;&gt;&gt; 12) ^ (hash &gt;&gt;&gt; 7)  ^ (hash &gt;&gt;&gt; 4)  </p>
 ]]></content>
       <tags>
@@ -24,20 +70,81 @@
     <url>/2023/04/03/Lock/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<h4 id="CAS-比较和交换"><a href="#CAS-比较和交换" class="headerlink" title="CAS(比较和交换)"></a>CAS(比较和交换)</h4><p>用于实现乐观锁<br>CAS 涉及到三个操作数：<br>V：要更新的变量值(Var)<br>E：预期值(Expected)<br>N：拟写入的新值(New)<br>当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则是前线程放弃更新。<br>举一个简单的例子：线程 A 要修改变量 i 的值为 6，i 原值为 1（V &#x3D; 1，E&#x3D;1，N&#x3D;6，假设不存在 ABA 问题）。<br>i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。<br>i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。</p>
-<h4 id="CAS存在的ABA问题"><a href="#CAS存在的ABA问题" class="headerlink" title="CAS存在的ABA问题"></a>CAS存在的ABA问题</h4><p>如果一个变量 V 初次读取的时候是 A 值，并且在准备赋值的时候检查到它仍然是 A 值，那我们就能说明它的值没有被其他线程修改过了吗？很明显是不能的，因为在这段时间它的值可能被改为其他值，然后又改回 A，那 CAS 操作就会误认为它从来没有被修改过。这个问题被称为 CAS 操作的 “ABA”问题。<br>ABA 问题的解决思路是在变量前面追加上版本号或者时间戳。JDK 1.5 以后的 AtomicStampedReference 类就是用来解决ABA问题的,其compareAndSet() 方法就是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值</p>
-<h4 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h4><p>volatile保证变量的可见性，当变量修饰为volatile时，该变量是共享且不稳定的，每次读取从内存中读取<br>volatile禁止指令重排，在对变量进行读写操作时，会插入特定的内存屏障来禁止指令重排，确保不同线程操作volatile时的有序性</p>
-<h4 id="JUC的lock"><a href="#JUC的lock" class="headerlink" title="JUC的lock"></a>JUC的lock</h4><p>Lock是接口，reentrantlock是实现类<br><strong>lock()方法</strong><br>获取锁 如果锁被其他线程占有 则当前线程进入阻塞状态直到锁变为可用<br><strong>lockInterruptibly()方法</strong><br>与lock()方法一样是阻塞获取锁，但是在等待锁时可以响应中断请求，一旦线程被中断，会抛出InterruptedException<br><strong>trylock()方法</strong><br>尝试获取锁，如果可用返回true 否则立刻返回false，也可以在添加等待时间的参数和类型<br><strong>unlock()方法</strong><br> 释放锁<br><strong>new Condition()</strong><br>创建一个condition对象，用于线程间的的条件等待,await() signal() signalall()类似object类的wait() notify() notifyall()，await()方法还可以添加时间参数和类型，在这段时间内如果线程没有被唤醒，那么会被返回尝试重新获取锁，通常在Reentrantlock中使用</p>
-<h4 id="synchronized使用"><a href="#synchronized使用" class="headerlink" title="synchronized使用"></a>synchronized使用</h4><p>synchronized 关键字加到 static 静态方法和 synchronized(class) 代码块上都是是给 Class 类上锁<br>synchronized 关键字加到实例方法上或者synchronized(object) 是给对象实例上锁；<br>尽量不要使用 synchronized(String a) ，因为 JVM 中，字符串常量池具有缓存功能<br>构造方法不能使用synchronized 因为构造方法是线程安全的</p>
-<h4 id="synchronized底层原理"><a href="#synchronized底层原理" class="headerlink" title="synchronized底层原理"></a>synchronized底层原理</h4><p>synchronized 同步语句块的实现使用的是 monitorenter 和两个monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。<br>第一个monitorexit处理正常返回，第二个monitorexit处理异常情况自动释放锁<br>在执行monitorenter时，会尝试获取对象的锁，如果锁的计数器为 0 则表示锁可以被获取，获取后将锁计数器设为 1 也就是加 1。<br>对象锁的的拥有者线程才可以执行 monitorexit 指令来释放锁。在执行 monitorexit 指令后，将锁计数器设为 0，表明锁被释放，其他线程可以尝试获取锁。<br>synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，而是 通过ACC_SYNCHRONIZED 进行标识，该标识指明了该方法是一个同步方法。不过两者的本质都是对对象监视器 monitor 的获取。</p>
-<h4 id="lock和synchronized的区别"><a href="#lock和synchronized的区别" class="headerlink" title="lock和synchronized的区别"></a>lock和synchronized的区别</h4><p>synchronized是Java语言的关键字Lock是一个接口。<br>synchronized不需要用户去手动释放锁，发生异常或者线程结束时自动释放锁;Lock则必须要用户去手动释放锁，如果没有主动释放锁，就有可能导致出现死锁现象。<br>lock可以配置公平策略,实现线程按照先后顺序获取锁。提供了trylock方法 可以试图获取锁，获取到或获取不到时，返回不同的返回值 让程序可以灵活处理。lock()和unlock()可以在不同的方法中执行,可以实现同一个线程在上一个方法中lock()在后续的其他方法中unlock(),比syncronized灵活的多。</p>
-<h4 id="synchronized优化"><a href="#synchronized优化" class="headerlink" title="synchronized优化"></a>synchronized优化</h4><p>jdk1.5前synchronized为重量级锁<br>jdk1.5后synchronized引入了自旋锁、适应性自旋锁、锁消除、锁粗化、偏向锁 轻量级锁来减少锁操作的开销<br>jdk1.8后废弃偏向锁</p>
-<h4 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h4><p>锁升级的过程具体如下：<br><strong>1)无锁状态：</strong>初始时，没有任何线程拥有锁，所有线程都能访问资源，但仅当资源未被修改时才能继续执行。通常使用CAS或者添加版本号操作来尝试更新资源，若失败则重试直到成功。(乐观锁)<br><strong>2)偏向锁状态：</strong>当一个线程多次访问同步代码块且没有其他线程竞争时，JVM会认为这个锁可以被该线程”偏向”。<br><strong>3)轻量级锁状态：</strong>如果一个线程尝试获取一个已被其他线程持有偏向锁的对象时，偏向锁会被撤销，升级为轻量级锁。<br><strong>4)重量级锁状态：</strong>当有多个线程竞争同一个锁时，轻量级锁会升级为重量级锁。</p>
-<h4 id="判断线程是否获取锁"><a href="#判断线程是否获取锁" class="headerlink" title="判断线程是否获取锁"></a>判断线程是否获取锁</h4><p>锁是一种同步机制，用于确保同一时间只有一个线程访问共享资源<br>使用synchronized关键字，Java每个对象都有与之关联的监视器monitor，当一个线程尝试获取某个对象的锁时，jvm会在对象头记录锁的状态和锁的持有线程id，锁信息放在对象头的mark word</p>
-<p><strong>判断获取锁的方式</strong></p>
-<p>1)通过thread类的holdslock()方法<br>2)ReentrantLock的isHeldByCurrent方法来判断当前线程是否拥有锁<br>3)object类的wait()和notify方法 如果没有锁则会抛出异常IllegalMonitorStateException</p>
-<h4 id="可重入锁"><a href="#可重入锁" class="headerlink" title="可重入锁"></a>可重入锁</h4><p>synchronized和reentranklock两者都是可重入锁(递归锁)，Lock类也是可重入锁，可重入锁指的是当前线程已经获取锁但未释放而再次获取锁时可以成功获取，如果是不可重入锁的话再次获取会造成死锁</p>
-<h4 id="synchronized和reentranklock区别"><a href="#synchronized和reentranklock区别" class="headerlink" title="synchronized和reentranklock区别"></a>synchronized和reentranklock区别</h4><p><strong>1)锁类型</strong><br>synchronized和reentranklock都是可重入锁和非公平锁，reentranklock通过构造方法传入参数true可以是公平锁，公平锁是指等待时间最长的线程优先获取锁<br><strong>2)实现方式</strong><br>synchronized依赖与jvm实现<br>reentranklock依赖于jdk实现的，即api层面，需要lock()和unlock()搭配try finally语句来完成<br><strong>3)加锁 释放锁方式</strong><br>synchronized是自动加锁和释放锁<br>reentranklock需要手动lock加锁和unlock释放锁并搭配try finally语句来完成<br><strong>4)功能不同</strong><br>reentranklock相比synchronized增加了一些功能<br><strong>可中断的等待锁：</strong>lock.lockInterruptibly<br><strong>超时等待锁：</strong>线程尝试获取锁，等待一段时间后放弃<br><strong>选择性通知：</strong>通过引入condition接口实现，多个condition绑定多个线程并通过signal()方法唤醒<br><strong>5)修饰对象不同</strong><br>synchronized修饰代码块 方法 类 reentranklock只能修饰代码块</p>
+<h4 id="CAS-比较和交换"><a href="#CAS-比较和交换" class="headerlink" title="CAS(比较和交换)"></a>CAS(比较和交换)</h4><ul>
+<li>CAS用于实现乐观锁</li>
+<li>CAS 涉及到三个操作数：<br>V：要更新的变量值(Var)  E：预期值(Expected)  N：拟写入的新值(New)</li>
+<li>当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则是前线程放弃更新。</li>
+<li>举一个简单的例子：线程 A 要修改变量 i 的值为 6，i 原值为 1（V &#x3D; 1，E&#x3D;1，N&#x3D;6，假设不存在 ABA 问题）<br>i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。<br>i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。</li>
+</ul>
+<h4 id="CAS存在的ABA问题"><a href="#CAS存在的ABA问题" class="headerlink" title="CAS存在的ABA问题"></a>CAS存在的ABA问题</h4><ul>
+<li><p>如果一个变量 V 初次读取的时候是 A 值，并且在准备赋值的时候检查到它仍然是 A 值，那我们就能说明它的值没有被其他线程修改过了吗？很明显是不能的，因为在这段时间它的值可能被改为其他值，然后又改回 A，那 CAS 操作就会误认为它从来没有被修改过。这个问题被称为 CAS 操作的 “ABA”问题。</p>
+</li>
+<li><p>ABA 问题的解决思路是在变量前面追加上版本号或者时间戳。</p>
+</li>
+<li><p>JDK 1.5 以后的 AtomicStampedReference 类就是用来解决ABA问题的,其compareAndSet() 方法就是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值</p>
+</li>
+</ul>
+<h4 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h4><ul>
+<li>volatile保证变量的可见性，当变量修饰为volatile时，该变量是共享且不稳定的，每次读取从内存中读取</li>
+<li>volatile禁止指令重排，在对变量进行读写操作时，会插入特定的内存屏障来禁止指令重排，确保不同线程操作volatile时的有序性</li>
+</ul>
+<h4 id="JUC的lock"><a href="#JUC的lock" class="headerlink" title="JUC的lock"></a>JUC的lock</h4><p>Lock是接口，Reentrantlock是实现类 </p>
+<ul>
+<li>lock()方法<br>获取锁 如果锁被其他线程占有 则当前线程进入阻塞状态直到锁变为可用*</li>
+<li>lockInterruptibly()方法<br>与lock()方法一样是阻塞获取锁，但是在等待锁时可以响应中断请求，一旦线程被中断，会抛出InterruptedException</li>
+<li>trylock()方法<br>尝试获取锁，如果可用返回true 否则立刻返回false，也可以在添加等待时间的参数和类型</li>
+<li><strong>unlock()方法</strong><br> 释放锁</li>
+<li>new Condition()<br>创建一个condition对象，用于线程间的的条件等待,await() signal() signalall()类似object类的wait() notify() notifyall()，await()方法还可以添加时间参数和类型，在这段时间内如果线程没有被唤醒，那么会被返回尝试重新获取锁，通常在Reentrantlock中使用</li>
+</ul>
+<h4 id="synchronized使用"><a href="#synchronized使用" class="headerlink" title="synchronized使用"></a>synchronized使用</h4><ul>
+<li>synchronized 关键字加到 static 静态方法和 synchronized(class) 代码块上都是是给 Class 类上锁</li>
+<li>synchronized 关键字加到实例方法上或者synchronized(object) 是给对象实例上锁</li>
+<li>尽量不要使用 synchronized(String a) ，因为 JVM 中，字符串常量池具有缓存功能                                                 </li>
+<li>构造方法不能使用synchronized 因为构造方法是线程安全的</li>
+</ul>
+<h4 id="synchronized底层原理"><a href="#synchronized底层原理" class="headerlink" title="synchronized底层原理"></a>synchronized底层原理</h4><ul>
+<li>synchronized 同步语句块的实现使用的是 monitorenter 和两个monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。</li>
+<li>第一个monitorexit处理正常返回，第二个monitorexit处理异常情况自动释放锁</li>
+<li>在执行monitorenter时，会尝试获取对象的锁，如果锁的计数器为 0 则表示锁可以被获取，获取后将锁计数器设为 1 也就是加 1。</li>
+<li>对象锁的的拥有者线程才可以执行 monitorexit 指令来释放锁。在执行 monitorexit 指令后，将锁计数器设为 0，表明锁被释放，其他线程可以尝试获取锁。</li>
+<li>synchronized 修饰的方法并没有 monitorenter 指令和 monitorexit 指令，而是 通过ACC_SYNCHRONIZED 进行标识，该标识指明了该方法是一个同步方法。不过两者的本质都是对对象监视器 monitor 的获取。</li>
+</ul>
+<h4 id="Lock和synchronized的区别"><a href="#Lock和synchronized的区别" class="headerlink" title="Lock和synchronized的区别"></a>Lock和synchronized的区别</h4><ul>
+<li>synchronized是Java语言的关键字Lock是一个接口。</li>
+<li>synchronized不需要用户去手动释放锁，发生异常或者线程结束时自动释放锁;Lock则必须要用户去手动释放锁，如果没有主动释放锁，就有可能导致出现死锁现象。</li>
+<li>lock可以配置公平策略,实现线程按照先后顺序获取锁。提供了trylock方法 可以试图获取锁，获取到或获取不到时，返回不同的返回值 让程序可以灵活处理。</li>
+<li>lock()和unlock()可以在不同的方法中执行,可以实现同一个线程在上一个方法中lock()在后续的其他方法中unlock(),比syncronized灵活的多。</li>
+</ul>
+<h4 id="synchronized优化"><a href="#synchronized优化" class="headerlink" title="synchronized优化"></a>synchronized优化</h4><ul>
+<li>dk1.5前synchronized为重量级锁</li>
+<li>jdk1.5后synchronized引入了自旋锁、适应性自旋锁、锁消除、锁粗化、偏向锁 轻量级锁来减少锁操作的开销</li>
+<li>jdk1.8后废弃偏向锁</li>
+</ul>
+<h4 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h4><p>锁升级的过程具体如下：</p>
+<ul>
+<li>锁状态：初始时，没有任何线程拥有锁，所有线程都能访问资源，但仅当资源未被修改时才能继续执行。通常使用CAS或者添加版本号操作来尝试更新资源，若失败则重试直到成功。(乐观锁)</li>
+<li>偏向锁状态：当一个线程多次访问同步代码块且没有其他线程竞争时，JVM会认为这个锁可以被该线程”偏向”。</li>
+<li>轻量级锁状态：如果一个线程尝试获取一个已被其他线程持有偏向锁的对象时，偏向锁会被撤销，升级为轻量级锁。</li>
+<li>重量级锁状态：当有多个线程竞争同一个锁时，轻量级锁会升级为重量级锁。</li>
+</ul>
+<h4 id="判断线程是否获取锁"><a href="#判断线程是否获取锁" class="headerlink" title="判断线程是否获取锁"></a>判断线程是否获取锁</h4><ul>
+<li>通过thread类的holdslock()方法</li>
+<li>ReentrantLock的isHeldByCurrent方法来判断当前线程是否拥有锁</li>
+<li>object类的wait()和notify方法 如果没有锁则会抛出异常IllegalMonitorStateException</li>
+</ul>
+<h4 id="可重入锁"><a href="#可重入锁" class="headerlink" title="可重入锁"></a>可重入锁</h4><ul>
+<li><p>可重入锁指的是当前线程已经获取锁但未释放而再次获取锁时可以成功获取，如果是不可重入锁的话再次获取会造成死锁</p>
+</li>
+<li><p>synchronized、reentranklock两者都是可重入锁</p>
+</li>
+</ul>
+<h4 id="synchronized和reentranklock区别"><a href="#synchronized和reentranklock区别" class="headerlink" title="synchronized和reentranklock区别"></a>synchronized和reentranklock区别</h4><ul>
+<li>锁类型<br>synchronized和reentranklock都是可重入锁和非公平锁，reentranklock通过构造方法传入参数true可以是公平锁，公平锁是指等待时间最长的线程优先获取锁</li>
+<li>实现方式<br>synchronized依赖与jvm实现<br>reentranklock依赖于jdk实现的，即api层面，需要lock()和unlock()搭配try finally语句来完成</li>
+<li>加锁 释放锁方式<br>synchronized是自动加锁和释放锁<br>reentranklock需要手动lock加锁和unlock释放锁并搭配try finally语句来完成</li>
+<li>功能不同<br>reentranklock相比synchronized增加了一些功能<br><strong>可中断的等待锁：</strong>lock.lockInterruptibly<br><strong>超时等待锁：</strong>线程尝试获取锁，等待一段时间后放弃<br><strong>选择性通知：</strong>通过引入condition接口实现，多个condition绑定多个线程并通过signal()方法唤醒</li>
+<li>修饰对象不同<br>synchronized修饰代码块 方法 类 reentranklock只能修饰代码块</li>
+</ul>
 ]]></content>
       <tags>
         <tag>并发编程</tag>
@@ -48,15 +155,32 @@
     <url>/2023/04/05/JVM/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>类装载子系统<br>类加载子系统介绍<br>1.类加载子系统负责从文件系统或是网络中加载.class文件，class文件在文件开头有特定的文件标识<br>2.把加载后的class类信息存放于方法区，除了类信息之外，方法区还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）<br>3.ClassLoader只负责class文件的加载，至于它是否可以运行，则由Execution Engine决定<br>4.如果调用构造器实例化对象，则该对象存放在堆区</p>
-<p>类加载器ClassLoader角色<br>1.class file 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候是要加载到JVM当中来根据这个文件实例化出n个一模一样的实例<br>2.class file加载到JVM中，被称为DNA元数据模板<br>3.在.class文件 –&gt; JVM –&gt; 最终成为元数据模板，此过程就要一个运输工具（类装载器Class Loader），扮演一个快递员的角色</p>
-<p>类加载的执行过程<br>加载<br>加载是类加载的第一个阶段。有两种时机会触发类加载：<br>预加载<br>虚拟机启动时加载，加载的是JAVA_HOME&#x2F;lib&#x2F;下的rt.jar下的.class文件，这个jar包里面的内容是程序运行时非常常常用到的，像java.lang.*、java.util.、 java.io. 等等，因此随着虚拟机一起加载。<br>运行时加载<br>虚拟机在用到一个.class文件的时候，会先去内存中查看一下这个.class文件有没有被加载，如果没有就会按照类的全限定名来加载这个类。<br>链接<br>链接包含三个步骤： 分别是 验证Verification , 准备Preparation , 解析Resolution 三个过程。<br>验证Verification<br>连接阶段的第一步，这一阶段的目的是为了确保.class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。<br>准备Preparation<br>准备阶段是正式为类变量分配内存并设置其初始值的阶段，这些变量所使用的内存都将在方法区中分配。<br>解析Resolution<br>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。<br>初始化<br>类的初始化阶段是类加载过程的最后一个步骤， 之前介绍的几个类加载的动作里， 除了在加载阶段用户应用程序可以通过自定义类加载器的方式局部参与外， 其余动作都完全由Java虚拟机来主导控制。 直到初始化阶段， Java虚拟机才真正开始执行类中编写的Java程序代码， 将主导权移交给应用程序。</p>
-<p>类加载器分类<br>jvm支持两种类型的加载器，分别是引导类加载器和自定义加载器<br>引导类加载器是由c&#x2F;c++实现的，自定义加载器是由java实现的<br>引导类加载器BootStrapClassLoader、自定义类加载器(Extension Class Loader、System Class Loader、User-Defined ClassLoader）</p>
-<p>启动类加载器<br>这个类加载器使用c&#x2F;c++实现，嵌套在jvm内部<br>它用来加载Java的核心类库（JAVA_HOME&#x2F;jre&#x2F;lib&#x2F;rt.jar、resource.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类<br>并不继承自java.lang.ClassLoader，没有父加载器</p>
-<p>扩展类加载器<br>java语言编写，由sun.misc.Launcher$ExtClassLoader实现<br>从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre&#x2F;lib&#x2F;ext子目录（扩展目录）下加载类库。如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载，派生于 ClassLoader，父类加载器为启动类加载器</p>
-<p>系统类加载器<br>java语言编写，由 sun.misc.Lanucher$AppClassLoader 实现<br>该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载的，它负责加载环境变量classpath或系统属性java.class.path 指定路径下的类库，派生于 ClassLoader<br>父类加载器为扩展类加载器<br>通过 ClassLoader#getSystemClassLoader() 方法可以获取到该类加载器</p>
-<p>用户自定义类加载器<br>在日常的Java开发中，类加载几乎是由三种加载器配合执行的，在必要时我们还可以自定义类加载器，来定制类的加载方式。</p>
-<p>双亲委派模型<br>双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即 ClassNotFoundException ），子加载器才会尝试自己去加载</p>
+<h3 id="类装载子系统"><a href="#类装载子系统" class="headerlink" title="类装载子系统"></a>类装载子系统</h3><h5 id="类加载子系统介绍"><a href="#类加载子系统介绍" class="headerlink" title="类加载子系统介绍"></a>类加载子系统介绍</h5><p>1.类加载子系统负责从文件系统或是网络中加载.class文件，class文件在文件开头有特定的文件标识</p>
+<p>2.把加载后的class类信息存放于方法区，除了类信息之外，方法区还会存放运行时常量池信息，可能还包括字符串字面量和数字常量（这部分常量信息是Class文件中常量池部分的内存映射）</p>
+<p>3.ClassLoader只负责class文件的加载，至于它是否可以运行，则由Execution Engine决定</p>
+<p>4.如果调用构造器实例化对象，则该对象存放在堆区</p>
+<h4 id="类加载器ClassLoader角色"><a href="#类加载器ClassLoader角色" class="headerlink" title="类加载器ClassLoader角色"></a>类加载器ClassLoader角色</h4><p>1.class file 存在于本地硬盘上，可以理解为设计师画在纸上的模板，而最终这个模板在执行的时候是要加载到JVM当中来根据这个文件实例化出n个一模一样的实例</p>
+<p>2.class file加载到JVM中，被称为DNA元数据模板</p>
+<p>3.在.class文件 –&gt; JVM –&gt; 最终成为元数据模板，此过程就要一个运输工具（类装载器Class Loader），扮演一个快递员的角色</p>
+<h4 id="类加载的执行过程"><a href="#类加载的执行过程" class="headerlink" title="类加载的执行过程"></a>类加载的执行过程</h4><h5 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h5><p>加载是类加载的第一个阶段。有两种时机会触发类加载：</p>
+<h6 id="预加载"><a href="#预加载" class="headerlink" title="预加载"></a>预加载</h6><p>虚拟机启动时加载，加载的是JAVA_HOME&#x2F;lib&#x2F;下的rt.jar下的.class文件，这个jar包里面的内容是程序运行时非常常常用到的，像java.lang.*、java.util.、 java.io. 等等，因此随着虚拟机一起加载。</p>
+<h6 id="运行时加载"><a href="#运行时加载" class="headerlink" title="运行时加载"></a>运行时加载</h6><p>虚拟机在用到一个.class文件的时候，会先去内存中查看一下这个.class文件有没有被加载，如果没有就会按照类的全限定名来加载这个类。</p>
+<h5 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h5><p>链接包含三个步骤： 分别是 验证Verification , 准备Preparation , 解析Resolution 三个过程。</p>
+<h5 id="验证Verification"><a href="#验证Verification" class="headerlink" title="验证Verification"></a>验证Verification</h5><p>连接阶段的第一步，这一阶段的目的是为了确保.class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。</p>
+<h5 id="准备Preparation"><a href="#准备Preparation" class="headerlink" title="准备Preparation"></a>准备Preparation</h5><p>准备阶段是正式为类变量分配内存并设置其初始值的阶段，这些变量所使用的内存都将在方法区中分配。</p>
+<h5 id="解析Resolution"><a href="#解析Resolution" class="headerlink" title="解析Resolution"></a>解析Resolution</h5><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
+<h5 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h5><p>类的初始化阶段是类加载过程的最后一个步骤， 之前介绍的几个类加载的动作里， 除了在加载阶段用户应用程序可以通过自定义类加载器的方式局部参与外， 其余动作都完全由Java虚拟机来主导控制。 </p>
+<p>直到初始化阶段， Java虚拟机才真正开始执行类中编写的Java程序代码， 将主导权移交给应用程序。</p>
+<h4 id="类加载器分类"><a href="#类加载器分类" class="headerlink" title="类加载器分类"></a>类加载器分类</h4><p>jvm支持两种类型的加载器，分别是引导类加载器和自定义加载器</p>
+<p>引导类加载器是由c&#x2F;c++实现的，自定义加载器是由java实现的</p>
+<p>引导类加载器BootStrapClassLoader</p>
+<p>自定义类加载器(Extension Class Loader、System Class Loader、User-Defined ClassLoader）</p>
+<h5 id="启动类加载器"><a href="#启动类加载器" class="headerlink" title="启动类加载器"></a>启动类加载器</h5><p>这个类加载器使用c&#x2F;c++实现，嵌套在jvm内部<br>它用来加载Java的核心类库（JAVA_HOME&#x2F;jre&#x2F;lib&#x2F;rt.jar、resource.jar或sun.boot.class.path路径下的内容），用于提供JVM自身需要的类<br>并不继承自java.lang.ClassLoader，没有父加载器</p>
+<h5 id="扩展类加载器"><a href="#扩展类加载器" class="headerlink" title="扩展类加载器"></a>扩展类加载器</h5><p>java语言编写，由sun.misc.Launcher$ExtClassLoader实现<br>从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre&#x2F;lib&#x2F;ext子目录（扩展目录）下加载类库。如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载，派生于 ClassLoader，父类加载器为启动类加载器</p>
+<h5 id="系统类加载器"><a href="#系统类加载器" class="headerlink" title="系统类加载器"></a>系统类加载器</h5><p>java语言编写，由 sun.misc.Lanucher$AppClassLoader 实现<br>该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载的，它负责加载环境变量classpath或系统属性java.class.path 指定路径下的类库，派生于 ClassLoader<br>父类加载器为扩展类加载器<br>通过 ClassLoader#getSystemClassLoader() 方法可以获取到该类加载器</p>
+<h5 id="用户自定义类加载器"><a href="#用户自定义类加载器" class="headerlink" title="用户自定义类加载器"></a>用户自定义类加载器</h5><p>在日常的Java开发中，类加载几乎是由三种加载器配合执行的，在必要时我们还可以自定义类加载器，来定制类的加载方式。</p>
+<h4 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h4><p>双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即 ClassNotFoundException ），子加载器才会尝试自己去加载</p>
+<p>​                                                                                                                                                                          </p>
 ]]></content>
       <tags>
         <tag>JVM</tag>
@@ -67,32 +191,28 @@
     <url>/2022/01/05/%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>设 n为点数，m为边数<br>存图方式<br>邻接矩阵<br>适用于边数较多的稠密图使用，当边数量接近点的数量的平方，即m≈n^2时，可定义为稠密图<br>&#x2F;&#x2F; 邻接矩阵数组：w[a][b] &#x3D; c 代表从 a 到 b 有权重为 c 的边</p>
+<h3 id="存图方式"><a href="#存图方式" class="headerlink" title="存图方式"></a>存图方式</h3><p>设 n为点数，m为边数</p>
+<h5 id="邻接矩阵"><a href="#邻接矩阵" class="headerlink" title="邻接矩阵"></a>邻接矩阵</h5><p>适用于边数较多的稠密图使用，当边数量接近点的数量的平方，即m≈n^2时，可定义为稠密图<br>&#x2F;&#x2F; 邻接矩阵数组：w[a][b] &#x3D; c 代表从 a 到 b 有权重为 c 的边</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int[][] w = new int[N][N];</span><br><span class="line"></span><br><span class="line">// 加边操作</span><br><span class="line">void add(int a, int b, int c) &#123;</span><br><span class="line">    w[a][b] = c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>邻接表,又叫链式前向星存图 适用于边数较少的稀疏图使用，当边数量接近点的数量，即 m≈n时，可定义为稀疏图</p>
+<h5 id="邻接表"><a href="#邻接表" class="headerlink" title="邻接表"></a>邻接表</h5><p>又叫链式前向星存图 适用于边数较少的稀疏图使用，当边数量接近点的数量，即 m≈n时，可定义为稀疏图</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int[] he = new int[N], e = new int[M], ne = new int[M], w = new int[M];</span><br><span class="line">int idx;</span><br><span class="line"></span><br><span class="line">void add(int a, int b, int c) &#123;</span><br><span class="line">    e[idx] = b;</span><br><span class="line">    ne[idx] = he[a];</span><br><span class="line">    he[a] = idx;</span><br><span class="line">    w[idx] = c;</span><br><span class="line">    idx++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>idx 是用来对边进行编号的，然后对存图用到的几个数组作简单解释：<br>he 数组：存储是某个节点所对应的边的集合（链表）的头结点；<br>e 数组：由于访问某一条边指向的节点；<br>ne 数组：由于是以链表的形式进行存边，该数组就是用于找到下一条边；<br>w 数组：用于记录某条边的权重为多少。<br>当我们想要遍历所有由 a 点发出的边时，可以使用如下方式：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for (int i = he[a]; i != -1; i = ne[i]) &#123;</span><br><span class="line">    int b = e[i], c = w[i]; // 存在由 a 指向 b 的边，权重为 c</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>类<br>最简单，但是相比上述两种存图方式，使用得较少的存图方式</p>
+<h5 id="类"><a href="#类" class="headerlink" title="类"></a>类</h5><p>最简单，但是相比上述两种存图方式，使用得较少的存图方式</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class Edge &#123;</span><br><span class="line">    // 代表从 a 到 b 有一条权重为 c 的边</span><br><span class="line">    int a, b, c;</span><br><span class="line">    Edge(int _a, int _b, int _c) &#123;</span><br><span class="line">        a = _a; b = _b; c = _c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>最短路算法<br>Floyd（邻接矩阵）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void floyd() &#123;</span><br><span class="line">        // floyd 基本流程为三层循环：</span><br><span class="line">        // 枚举中转点 - 枚举起点 - 枚举终点 - 松弛操作        </span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                for (int j = 1; j &lt;= n; j++) &#123;</span><br><span class="line">                    w[i][j] = Math.min(w[i][j], w[i][p] + w[p][j]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="最短路算法"><a href="#最短路算法" class="headerlink" title="最短路算法"></a>最短路算法</h3><h5 id="Floyd（邻接矩阵）"><a href="#Floyd（邻接矩阵）" class="headerlink" title="Floyd（邻接矩阵）"></a>Floyd（邻接矩阵）</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void floyd() &#123;</span><br><span class="line">        // floyd 基本流程为三层循环：</span><br><span class="line">        // 枚举中转点 - 枚举起点 - 枚举终点 - 松弛操作        </span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                for (int j = 1; j &lt;= n; j++) &#123;</span><br><span class="line">                    w[i][j] = Math.min(w[i][j], w[i][p] + w[p][j]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-<p>朴素 Dijkstra（邻接矩阵）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void dijkstra() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「未更新」和「距离为正无穷」</span><br><span class="line">        Arrays.fill(vis, false);</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 迭代 n 次</span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            // 每次找到「最短距离最小」且「未被更新」的点 t</span><br><span class="line">            int t = -1;</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                if (!vis[i] &amp;&amp; (t == -1 || dist[i] &lt; dist[t])) t = i;</span><br><span class="line">            &#125;</span><br><span class="line">            // 标记点 t 为已更新</span><br><span class="line">            vis[t] = true;</span><br><span class="line">            // 用点 t 的「最小距离」更新其他点</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                dist[i] = Math.min(dist[i], dist[t] + w[t][i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="朴素-Dijkstra（邻接矩阵）"><a href="#朴素-Dijkstra（邻接矩阵）" class="headerlink" title="朴素 Dijkstra（邻接矩阵）"></a>朴素 Dijkstra（邻接矩阵）</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void dijkstra() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「未更新」和「距离为正无穷」</span><br><span class="line">        Arrays.fill(vis, false);</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 迭代 n 次</span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            // 每次找到「最短距离最小」且「未被更新」的点 t</span><br><span class="line">            int t = -1;</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                if (!vis[i] &amp;&amp; (t == -1 || dist[i] &lt; dist[t])) t = i;</span><br><span class="line">            &#125;</span><br><span class="line">            // 标记点 t 为已更新</span><br><span class="line">            vis[t] = true;</span><br><span class="line">            // 用点 t 的「最小距离」更新其他点</span><br><span class="line">            for (int i = 1; i &lt;= n; i++) &#123;</span><br><span class="line">                dist[i] = Math.min(dist[i], dist[t] + w[t][i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-<p>堆优化 Dijkstra（邻接表）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void dijkstra() &#123;</span><br><span class="line">       // 起始先将所有的点标记为「未更新」和「距离为正无穷」</span><br><span class="line">       Arrays.fill(vis, false);</span><br><span class="line">       Arrays.fill(dist, INF);</span><br><span class="line">       // 只有起点最短距离为 0</span><br><span class="line">       dist[k] = 0;</span><br><span class="line">       // 使用「优先队列」存储所有可用于更新的点</span><br><span class="line">       // 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点</span><br><span class="line">       PriorityQueue&lt;int[]&gt; q = new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);</span><br><span class="line">       q.add(new int[]&#123;k, 0&#125;);</span><br><span class="line">       while (!q.isEmpty()) &#123;</span><br><span class="line">           // 每次从「优先队列」中弹出</span><br><span class="line">           int[] poll = q.poll();</span><br><span class="line">           int id = poll[0], step = poll[1];</span><br><span class="line">           // 如果弹出的点被标记「已更新」，则跳过</span><br><span class="line">           if (vis[id]) continue;</span><br><span class="line">           // 标记该点「已更新」，并使用该点更新其他点的「最短距离」</span><br><span class="line">           vis[id] = true;</span><br><span class="line">           for (int i = he[id]; i != -1; i = ne[i]) &#123;</span><br><span class="line">               int j = e[i];</span><br><span class="line">               if (dist[j] &gt; dist[id] + w[i]) &#123;</span><br><span class="line">                   dist[j] = dist[id] + w[i];</span><br><span class="line">                   q.add(new int[]&#123;j, dist[j]&#125;);</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="堆优化-Dijkstra（邻接表）"><a href="#堆优化-Dijkstra（邻接表）" class="headerlink" title="堆优化 Dijkstra（邻接表）"></a>堆优化 Dijkstra（邻接表）</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void dijkstra() &#123;</span><br><span class="line">       // 起始先将所有的点标记为「未更新」和「距离为正无穷」</span><br><span class="line">       Arrays.fill(vis, false);</span><br><span class="line">       Arrays.fill(dist, INF);</span><br><span class="line">       // 只有起点最短距离为 0</span><br><span class="line">       dist[k] = 0;</span><br><span class="line">       // 使用「优先队列」存储所有可用于更新的点</span><br><span class="line">       // 以 (点编号, 到起点的距离) 进行存储，优先弹出「最短距离」较小的点</span><br><span class="line">       PriorityQueue&lt;int[]&gt; q = new PriorityQueue&lt;&gt;((a,b)-&gt;a[1]-b[1]);</span><br><span class="line">       q.add(new int[]&#123;k, 0&#125;);</span><br><span class="line">       while (!q.isEmpty()) &#123;</span><br><span class="line">           // 每次从「优先队列」中弹出</span><br><span class="line">           int[] poll = q.poll();</span><br><span class="line">           int id = poll[0], step = poll[1];</span><br><span class="line">           // 如果弹出的点被标记「已更新」，则跳过</span><br><span class="line">           if (vis[id]) continue;</span><br><span class="line">           // 标记该点「已更新」，并使用该点更新其他点的「最短距离」</span><br><span class="line">           vis[id] = true;</span><br><span class="line">           for (int i = he[id]; i != -1; i = ne[i]) &#123;</span><br><span class="line">               int j = e[i];</span><br><span class="line">               if (dist[j] &gt; dist[id] + w[i]) &#123;</span><br><span class="line">                   dist[j] = dist[id] + w[i];</span><br><span class="line">                   q.add(new int[]&#123;j, dist[j]&#125;);</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 
-<p>Bellman Ford（类 &amp; 邻接表）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void bf() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「距离为正无穷」</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 迭代 n 次</span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            int[] prev = dist.clone();</span><br><span class="line">            // 每次都使用上一次迭代的结果，执行松弛操作</span><br><span class="line">            for (Edge e : es) &#123;</span><br><span class="line">                int a = e.a, b = e.b, c = e.c;</span><br><span class="line">                dist[b] = Math.min(dist[b], prev[a] + c);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="Bellman-Ford（类-邻接表）"><a href="#Bellman-Ford（类-邻接表）" class="headerlink" title="Bellman Ford（类 &amp; 邻接表）"></a>Bellman Ford（类 &amp; 邻接表）</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void bf() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「距离为正无穷」</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 迭代 n 次</span><br><span class="line">        for (int p = 1; p &lt;= n; p++) &#123;</span><br><span class="line">            int[] prev = dist.clone();</span><br><span class="line">            // 每次都使用上一次迭代的结果，执行松弛操作</span><br><span class="line">            for (Edge e : es) &#123;</span><br><span class="line">                int a = e.a, b = e.b, c = e.c;</span><br><span class="line">                dist[b] = Math.min(dist[b], prev[a] + c);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-<p>SPFA（邻接表）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void spfa() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「未入队」和「距离为正无穷」</span><br><span class="line">        Arrays.fill(vis, false);</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 使用「双端队列」存储，存储的是点编号</span><br><span class="line">        Deque&lt;Integer&gt; d = new ArrayDeque&lt;&gt;();</span><br><span class="line">        // 将「源点/起点」进行入队，并标记「已入队」</span><br><span class="line">        d.addLast(k);</span><br><span class="line">        vis[k] = true;</span><br><span class="line">        while (!d.isEmpty()) &#123;</span><br><span class="line">            // 每次从「双端队列」中取出，并标记「未入队」</span><br><span class="line">            int poll = d.pollFirst();</span><br><span class="line">            vis[poll] = false;</span><br><span class="line">            // 尝试使用该点，更新其他点的最短距离</span><br><span class="line">            // 如果更新的点，本身「未入队」则加入队列中，并标记「已入队」</span><br><span class="line">            for (int i = he[poll]; i != -1; i = ne[i]) &#123;</span><br><span class="line">                int j = e[i];</span><br><span class="line">                if (dist[j] &gt; dist[poll] + w[i]) &#123;</span><br><span class="line">                    dist[j] = dist[poll] + w[i];</span><br><span class="line">                    if (vis[j]) continue;</span><br><span class="line">                    d.addLast(j);</span><br><span class="line">                    vis[j] = true;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="SPFA（邻接表）"><a href="#SPFA（邻接表）" class="headerlink" title="SPFA（邻接表）"></a>SPFA（邻接表）</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void spfa() &#123;</span><br><span class="line">        // 起始先将所有的点标记为「未入队」和「距离为正无穷」</span><br><span class="line">        Arrays.fill(vis, false);</span><br><span class="line">        Arrays.fill(dist, INF);</span><br><span class="line">        // 只有起点最短距离为 0</span><br><span class="line">        dist[k] = 0;</span><br><span class="line">        // 使用「双端队列」存储，存储的是点编号</span><br><span class="line">        Deque&lt;Integer&gt; d = new ArrayDeque&lt;&gt;();</span><br><span class="line">        // 将「源点/起点」进行入队，并标记「已入队」</span><br><span class="line">        d.addLast(k);</span><br><span class="line">        vis[k] = true;</span><br><span class="line">        while (!d.isEmpty()) &#123;</span><br><span class="line">            // 每次从「双端队列」中取出，并标记「未入队」</span><br><span class="line">            int poll = d.pollFirst();</span><br><span class="line">            vis[poll] = false;</span><br><span class="line">            // 尝试使用该点，更新其他点的最短距离</span><br><span class="line">            // 如果更新的点，本身「未入队」则加入队列中，并标记「已入队」</span><br><span class="line">            for (int i = he[poll]; i != -1; i = ne[i]) &#123;</span><br><span class="line">                int j = e[i];</span><br><span class="line">                if (dist[j] &gt; dist[poll] + w[i]) &#123;</span><br><span class="line">                    dist[j] = dist[poll] + w[i];</span><br><span class="line">                    if (vis[j]) continue;</span><br><span class="line">                    d.addLast(j);</span><br><span class="line">                    vis[j] = true;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
 ]]></content>
       <tags>
@@ -104,15 +224,71 @@
     <url>/2023/03/05/MySQL/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>事务：将一系列数据库操作（如读取、写入、删除）封装成一个逻辑单元，这组操作要么全部成功执行（被提交），要么一个都不执行（因错误而回滚）<br>ACID 特性<br>在关系型数据库管理系统中，一个逻辑工作单元要成为事务，必须满足这 4 个特性，即所谓的 ACID：原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）和持久性（Durability）<br>原子性：事务是一个原子操作单元，其对数据的修改，要么全都执行，要么全都不执行。<br>持久性：指的是一个事务一旦提交，它对数据库中数据的改变就应该是永久性的，后续的操作或故障不应该对其有任何影响，不会丢失。<br>隔离性：指的是一个事务的执行不能被其他事务干扰，即一个事务内部的操作及使用的数据对其他的并发事务是隔离的。<br>一致性：指的是事务开始之前和事务结束之后，数据库的完整性限制未被破坏。一致性包括两方面的内容，分别是约束一致性和数据一致性。<br>约束一致性：创建表结构时所指定的外键、Check、唯一索引等约束，可惜在 MySQL 中不支持Check<br>数据一致性：是一个综合性的规定，因为它是由原子性、持久性、隔离性共同保证的结果，而不是单单依赖于某一种技术</p>
-<p>并发事务<br>事务并发处理可能会带来一些问题，比如：更新丢失、脏读、不可重复读、幻读等。<br>更新丢失：当两个或多个事务更新同一行记录，会产生更新丢失现象。可以分为回滚覆盖和提交覆盖：回滚覆盖：一个事务回滚操作，把其他事务已提交的数据给覆盖了；提交覆盖：一个事务提交操作，把其他事务已提交的数据给覆盖了<br>脏读：一个事务读取到了另一个事务修改但未提交的数据<br>不可重复读：一个事务中多次读取同一行记录不一致，后面读取的跟前面读取的不一致<br>幻读：一个事务中多次按相同条件查询，结果不一致。后续查询的结果和面前查询结果不同，多了或少了几行记录</p>
-<p>事务隔离级别<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/21.png"><br>读未提交（Read Uncommitted）：解决了回滚覆盖类型的更新丢失，但可能发生脏读现象，也就是可能读取到其他会话中未提交事务修改的数据<br>已提交读（Read Committed）：只能读取到其他会话中已经提交的数据，解决了脏读。但可能发生不可重复读现象，也就是可能在一个事务中两次查询结果不一致<br>可重复度（Repeatable Read）：解决了不可重复读，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上会出现幻读，简单的说幻读指的的当用户读取某一范围的数据行时，另一个事务又在该范围插入了新行，当用户在读取该范围的数据时会发现有新的幻影行<br>可串行化（Serializable）：所有的增删改查串行执行。它通过强制事务排序，解决相互冲突，从而解决幻度的问题。这个级别可能导致大量的超时现象的和锁竞争，效率低下</p>
-<p>解决并发事务存在的问题<br>排队<br>最简单的方法，就是完全顺序执行所有事务的数据库操作，不需要加锁，简单的说就是全局排队。序列化执行所有的事务单元，数据库某个时刻只处理一个事务操作，特点是强一致性，处理性能低。<br>排他锁<br>引入锁之后就可以支持并发处理事务，如果事务之间涉及到相同的数据项时，会使用排他锁，或叫互斥锁，先进入的事务独占数据项以后，其他事务被阻塞，等待前面的事务释放锁。<br>读写锁<br>读和写操作：读读、写写、读写、写读。<br>读写锁就是进一步细化锁的颗粒度，区分读操作和写操作，让读和读之间不加锁，这样下面的两个事务就可以同时被执行了。<br>读写锁，可以让读和读并行，而读和写、写和读、写和写这几种之间还是要加排他锁。<br>MVCC<br>多版本控制MVCC，是指在数据库中为了实现高并发的数据访问，对数据进行多版本处理，并通过事务的可见性来保证事务能看到自己应该看到的数据版本。多版本控制很巧妙地将稀缺资源的独占互斥转换为并发，大大提高了数据库的吞吐量及读写性能</p>
-<p>MVCC实现原理<br>MVCC最大的好处是读不加锁，读写不冲突。在读多写少的系统应用中，读写不冲突是非常重要的，极大的提升系统的并发性能，这也是为什么现阶段几乎所有的关系型数据库都支持 MVCC 的原因，不过目前MVCC只在 Read Commited 和 Repeatable Read 两种隔离级别下工作。<br>在 MVCC 并发控制中，读操作可以分为两类: 快照读（Snapshot Read）与当前读 （Current Read）。<br>快照读：读取的是记录的快照版本（有可能是历史版本），不用加锁。（select）<br>当前读：读取的是记录的最新版本，并且当前读返回的记录，都会加锁，保证其他事务不会再并发修改这条记录。（select… for update 或lock in share mode，insert&#x2F;delete&#x2F;update）<br>假设 F1～F6 是表中字段的名字，1～6 是其对应的数据。后面三个隐含字段分别对应该行的隐含ID、事务号和回滚指针，如下图所示<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/18.png"><br>假如一条数据是刚 INSERT 的，DB_ROW_ID 为 1，其他两个字段为空。当事务 1 更改该行的数据值时，会进行如下操作，如下图所示。<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/19.png"><br>用排他锁锁定该行，记录 Redo Log<br>把该行修改前的值复制到 Undo Log，即图中下面的行<br>修改当前行的值，填写事务编号，使回滚指针指向 Undo Log 中修改前的行<br>接下来事务2操作，过程与事务 1 相同，此时 Undo Log 中会有两行记录，并且通过回滚指针连在一起，通过当前记录的回滚指针回溯到该行创建时的初始内容，如下图所示。<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/20.png"><br>MVCC已经实现了读读、读写、写读并发处理，如果想进一步解决写写冲突，可以采用下面两种方案：<br>乐观锁<br>悲观锁</p>
-<p>乐观锁<br>乐观锁是相对于悲观锁而言的，它不是数据库提供的功能，需要开发者自己去实现。在数据库操作时，想法很乐观，认为这次的操作不会导致冲突，因此在数据库操作时并不做任何的特殊处理，即不加锁，而是在进行事务提交时再去判断是否有冲突了。<br>乐观锁实现可以通过使用版本字段（version）或者时间戳（Timestamp）字段来实现。<br>使用版本字段（version）：先给数据表增加一个版本(version) 字段，每操作一次，将那条记录的版本号加 1。version是用来查看被读的记录有无变化，作用是防止记录在业务处理期间被其他事务修改<br>使用时间戳（Timestamp）：与使用version版本字段相似，同样需要给在数据表增加一个字段，字段类型使用timestamp时间戳。也是在更新提交的时候检查当前数据库中数据的时间戳和自己更新前取到的时间戳进行对比，如果一致则提交更新，否则就是版本冲突，取消操作<br>除了自己手动实现乐观锁之外，许多数据库访问框架也封装了乐观锁的实现，比如hibernate框架。MyBatis框架大家可以使用OptimisticLocker插件来扩展。</p>
-<p>悲观锁<br>悲观锁（Pessimistic Locking），是指在数据处理过程，将数据处于锁定状态，一般使用数据库的锁机制实现。从广义上来讲，前面提到的行锁、表锁、读锁、写锁、共享锁、排他锁等，这些都属于悲观锁范畴。<br>悲观锁和乐观锁都可以解决事务写写并发，在应用中可以根据并发处理能力选择区分，比如对并发率要求高的选择乐观锁；对于并发率要求低的可以选择悲观锁。</p>
-<p>MySQL的锁<br>锁分类<br>从操作的粒度区分：<br>表级锁：每次操作锁住整张表。锁定粒度大，发生锁冲突的概率最高，并发度最低。应用在MyISAM、InnoDB、BDB 等存储引擎中<br>行级锁：每次操作锁住一行数据。锁定粒度最小，发生锁冲突的概率最低，并发度最高。应用在InnoDB 存储引擎中<br>页级锁：每次锁定相邻的一组记录，锁定粒度界于表锁和行锁之间，开销和加锁时间界于表锁和行锁之间，并发度一般。应用在BDB 存储引擎中<br>从操作类型区分：<br>读锁（S锁）：共享锁，针对同一份数据，多个读操作可以同时进行而不会互相影响<br>写锁（X锁）：排他锁，当前写操作没有完成前，它会阻断其他写锁和读锁<br>从操作性能区分：<br>乐观锁：一般的实现方式是对记录数据版本进行比对，在数据更新提交的时候才会进行冲突检测，如果发现冲突了，则提示错误信息<br>悲观锁：在对一条数据修改的时候，为了避免同时被其他人修改，在修改数据之前先锁定，再修改的控制方式。共享锁和排他锁是悲观锁的不同实现，但都属于悲观锁范畴</p>
-<p>行锁<br>在InnoDB引擎中，我们可以使用行锁和表锁，其中行锁又分为共享锁和排他锁。InnoDB行锁是通过对索引数据页上的记录加锁实现的，主要实现算法有 3 种：Record Lock、Gap Lock 和 Next-key Lock<br>RecordLock锁：锁定单个行记录的锁。（记录锁，RC、RR隔离级别都支持）<br>GapLock锁：间隙锁，锁定索引记录间隙，确保索引记录的间隙不变。（范围锁，RR隔离级别支持）<br>Next-key Lock 锁：记录锁和间隙锁组合，同时锁住数据，并且锁住数据前后范围。（记录锁+范围锁，RR隔离级别支持）<br>在RR隔离级别，InnoDB对于记录加锁行为都是先采用Next-Key Lock，但是当SQL操作含有唯一索引时，Innodb会对Next-Key Lock进行优化，降级为RecordLock，仅锁住索引本身而非范围。</p>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>将一系列数据库操作（如读取、写入、删除）封装成一个逻辑单元，这组操作要么全部成功执行（被提交），要么一个都不执行（因错误而回滚）</p>
+<h3 id="ACID-特性"><a href="#ACID-特性" class="headerlink" title="ACID 特性"></a>ACID 特性</h3><p>在关系型数据库管理系统中，一个逻辑工作单元要成为事务，必须满足这 4 个特性，即所谓的 ACID：原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）和持久性（Durability）</p>
+<h5 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h5><p>事务是一个原子操作单元，其对数据的修改，要么全都执行，要么全都不执行。</p>
+<h5 id="持久性"><a href="#持久性" class="headerlink" title="持久性"></a>持久性</h5><p>指的是一个事务一旦提交，它对数据库中数据的改变就应该是永久性的，后续的操作或故障不应该对其有任何影响，不会丢失。</p>
+<h5 id="隔离性"><a href="#隔离性" class="headerlink" title="隔离性"></a>隔离性</h5><p>指的是一个事务的执行不能被其他事务干扰，即一个事务内部的操作及使用的数据对其他的并发事务是隔离的。</p>
+<h5 id="一致性"><a href="#一致性" class="headerlink" title="一致性"></a>一致性</h5><p>指的是事务开始之前和事务结束之后，数据库的完整性限制未被破坏。一致性包括两方面的内容，分别是约束一致性和数据一致性。<br>约束一致性：创建表结构时所指定的外键、Check、唯一索引等约束，可惜在 MySQL 中不支持Check<br>数据一致性：是一个综合性的规定，因为它是由原子性、持久性、隔离性共同保证的结果，而不是单单依赖于某一种技术</p>
+<h4 id="并发事务"><a href="#并发事务" class="headerlink" title="并发事务"></a>并发事务</h4><p>事务并发处理可能会带来一些问题，比如：更新丢失、脏读、不可重复读、幻读等。</p>
+<h5 id="更新丢失"><a href="#更新丢失" class="headerlink" title="更新丢失"></a>更新丢失</h5><p>当两个或多个事务更新同一行记录，会产生更新丢失现象。可以分为回滚覆盖和提交覆盖：</p>
+<p>回滚覆盖：一个事务回滚操作，把其他事务已提交的数据给覆盖了</p>
+<p>提交覆盖：一个事务提交操作，把其他事务已提交的数据给覆盖了</p>
+<h5 id="脏读"><a href="#脏读" class="headerlink" title="脏读"></a>脏读</h5><p>一个事务读取到了另一个事务修改但未提交的数据</p>
+<h5 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h5><p>一个事务中多次读取同一行记录不一致，后面读取的跟前面读取的不一致</p>
+<h5 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h5><p>一个事务中多次按相同条件查询，结果不一致。后续查询的结果和面前查询结果不同，多了或少了几行记录</p>
+<h4 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h4><p><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/21.png"></p>
+<h5 id="读未提交（Read-Uncommitted"><a href="#读未提交（Read-Uncommitted" class="headerlink" title="读未提交（Read Uncommitted)"></a>读未提交（Read Uncommitted)</h5><p>解决了回滚覆盖类型的更新丢失，但可能发生脏读现象，也就是可能读取到其他会话中未提交事务修改的数据</p>
+<h5 id="已提交读（Read-Committed）"><a href="#已提交读（Read-Committed）" class="headerlink" title="已提交读（Read Committed）"></a>已提交读（Read Committed）</h5><p>只能读取到其他会话中已经提交的数据，解决了脏读。但可能发生不可重复读现象，也就是可能在一个事务中两次查询结果不一致</p>
+<h5 id="可重复读（Repeatable-Read）"><a href="#可重复读（Repeatable-Read）" class="headerlink" title="可重复读（Repeatable Read）"></a>可重复读（Repeatable Read）</h5><p>解决了不可重复读，它确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。不过理论上会出现幻读，简单的说幻读指的的当用户读取某一范围的数据行时，另一个事务又在该范围插入了新行，当用户在读取该范围的数据时会发现有新的幻影行</p>
+<h5 id="可串行化（Serializable"><a href="#可串行化（Serializable" class="headerlink" title="可串行化（Serializable)"></a>可串行化（Serializable)</h5><p>所有的增删改查串行执行。它通过强制事务排序，解决相互冲突，从而解决幻度的问题。这个级别可能导致大量的超时现象的和锁竞争，效率低下</p>
+<h4 id="解决并发事务存在的问题"><a href="#解决并发事务存在的问题" class="headerlink" title="解决并发事务存在的问题"></a>解决并发事务存在的问题</h4><h5 id="排队"><a href="#排队" class="headerlink" title="排队"></a>排队</h5><p>最简单的方法，就是完全顺序执行所有事务的数据库操作，不需要加锁，简单的说就是全局排队。序列化执行所有的事务单元，数据库某个时刻只处理一个事务操作，特点是强一致性，处理性能低。</p>
+<h5 id="排他锁"><a href="#排他锁" class="headerlink" title="排他锁"></a>排他锁</h5><p>引入锁之后就可以支持并发处理事务，如果事务之间涉及到相同的数据项时，会使用排他锁，或叫互斥锁，先进入的事务独占数据项以后，其他事务被阻塞，等待前面的事务释放锁。</p>
+<h5 id="读写锁"><a href="#读写锁" class="headerlink" title="读写锁"></a>读写锁</h5><p>读和写操作：读读、写写、读写、写读。<br>读写锁就是进一步细化锁的颗粒度，区分读操作和写操作，让读和读之间不加锁，这样下面的两个事务就可以同时被执行了。<br>读写锁，可以让读和读并行，而读和写、写和读、写和写这几种之间还是要加排他锁。</p>
+<h5 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h5><p>多版本控制MVCC，是指在数据库中为了实现高并发的数据访问，对数据进行多版本处理，并通过事务的可见性来保证事务能看到自己应该看到的数据版本。多版本控制很巧妙地将稀缺资源的独占互斥转换为并发，大大提高了数据库的吞吐量及读写性能</p>
+<h4 id="MVCC实现原理"><a href="#MVCC实现原理" class="headerlink" title="MVCC实现原理"></a>MVCC实现原理</h4><p>MVCC最大的好处是读不加锁，读写不冲突。在读多写少的系统应用中，读写不冲突是非常重要的，极大的提升系统的并发性能，这也是为什么现阶段几乎所有的关系型数据库都支持 MVCC 的原因，不过目前MVCC只在 Read Commited 和 Repeatable Read 两种隔离级别下工作。</p>
+<ul>
+<li><p>在 MVCC 并发控制中，读操作可以分为两类: 快照读（Snapshot Read）与当前读 （Current Read）。</p>
+</li>
+<li><p>快照读：读取的是记录的快照版本（有可能是历史版本），不用加锁。（select）</p>
+</li>
+<li><p>当前读：读取的是记录的最新版本，并且当前读返回的记录，都会加锁，保证其他事务不会再并发修改这条记录。（select… for update 或lock in share mode，insert&#x2F;delete&#x2F;update）</p>
+<p>假设 F1～F6 是表中字段的名字，1～6 是其对应的数据。后面三个隐含字段分别对应该行的隐含ID、事务号和回滚指针，如下图所示<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/18.png"><br>假如一条数据是刚 INSERT 的，DB_ROW_ID 为 1，其他两个字段为空。当事务 1 更改该行的数据值时，会进行如下操作，如下图所示。<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/19.png"><br>用排他锁锁定该行，记录 Redo Log<br>把该行修改前的值复制到 Undo Log，即图中下面的行<br>修改当前行的值，填写事务编号，使回滚指针指向 Undo Log 中修改前的行<br>接下来事务2操作，过程与事务 1 相同，此时 Undo Log 中会有两行记录，并且通过回滚指针连在一起，通过当前记录的回滚指针回溯到该行创建时的初始内容，如下图所示。<br><img src="https://blog.rubinchu.com/wp-content/uploads/2021/10/20.png">MVCC已经实现了读读、读写、写读并发处理，如果想进一步解决写写冲突，可以采用乐观锁或者悲观锁</p>
+</li>
+</ul>
+<h4 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h4><ul>
+<li>乐观锁是相对于悲观锁而言的，它不是数据库提供的功能，需要开发者自己去实现。在数据库操作时，想法很乐观，认为这次的操作不会导致冲突，因此在数据库操作时并不做任何的特殊处理，即不加锁，而是在进行事务提交时再去判断是否有冲突了。</li>
+<li>乐观锁实现可以通过使用版本字段（version）或者时间戳（Timestamp）字段来实现。</li>
+<li>使用版本字段（version）：先给数据表增加一个版本(version) 字段，每操作一次，将那条记录的版本号加 1。version是用来查看被读的记录有无变化，作用是防止记录在业务处理期间被其他事务修改</li>
+<li>使用时间戳（Timestamp）：与使用version版本字段相似，同样需要给在数据表增加一个字段，字段类型使用timestamp时间戳。也是在更新提交的时候检查当前数据库中数据的时间戳和自己更新前取到的时间戳进行对比，如果一致则提交更新，否则就是版本冲突，取消操作</li>
+<li>除了自己手动实现乐观锁之外，许多数据库访问框架也封装了乐观锁的实现，比如hibernate框架。MyBatis框架大家可以使用OptimisticLocker插件来扩展。</li>
+</ul>
+<h4 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h4><ul>
+<li>悲观锁（Pessimistic Locking），是指在数据处理过程，将数据处于锁定状态，一般使用数据库的锁机制实现。从广义上来讲，前面提到的行锁、表锁、读锁、写锁、共享锁、排他锁等，这些都属于悲观锁范畴。</li>
+<li>悲观锁和乐观锁都可以解决事务写写并发，在应用中可以根据并发处理能力选择区分，比如对并发率要求高的选择乐观锁；对于并发率要求低的可以选择悲观锁。</li>
+</ul>
+<h4 id="MySQL的锁"><a href="#MySQL的锁" class="headerlink" title="MySQL的锁"></a>MySQL的锁</h4><h5 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h5><p>从操作的粒度区分：</p>
+<ul>
+<li>表级锁：每次操作锁住整张表。锁定粒度大，发生锁冲突的概率最高，并发度最低。应用在MyISAM、InnoDB、BDB 等存储引擎中</li>
+<li>行级锁：每次操作锁住一行数据。锁定粒度最小，发生锁冲突的概率最低，并发度最高。应用在InnoDB 存储引擎中</li>
+</ul>
+<p>从操作类型区分：</p>
+<ul>
+<li>读锁（S锁）：共享锁，针对同一份数据，多个读操作可以同时进行而不会互相影响</li>
+<li>写锁（X锁）：排他锁，当前写操作没有完成前，它会阻断其他写锁和读锁</li>
+</ul>
+<p>从操作性能区分：</p>
+<ul>
+<li>乐观锁：一般的实现方式是对记录数据版本进行比对，在数据更新提交的时候才会进行冲突检测，如果发现冲突了，则提示错误信息</li>
+<li>悲观锁：在对一条数据修改的时候，为了避免同时被其他人修改，在修改数据之前先锁定，再修改的控制方式。共享锁和排他锁是悲观锁的不同实现，但都属于悲观锁范畴</li>
+</ul>
+<h5 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h5><p>在InnoDB引擎中，我们可以使用行锁和表锁，其中行锁又分为共享锁和排他锁。InnoDB行锁是通过对索引数据页上的记录加锁实现的，主要实现算法有 3 种：Record Lock、Gap Lock 和 Next-key Lock</p>
+<ul>
+<li>RecordLock锁：锁定单个行记录的锁。（记录锁，RC、RR隔离级别都支持）</li>
+<li>GapLock锁：间隙锁，锁定索引记录间隙，确保索引记录的间隙不变。（范围锁，RR隔离级别支持）</li>
+<li>Next-key Lock 锁：记录锁和间隙锁组合，同时锁住数据，并且锁住数据前后范围。（记录锁+范围锁，RR隔离级别支持）</li>
+<li>在RR隔离级别，InnoDB对于记录加锁行为都是先采用Next-Key Lock，但是当SQL操作含有唯一索引时，Innodb会对Next-Key Lock进行优化，降级为RecordLock，仅锁住索引本身而非范围。</li>
+</ul>
 ]]></content>
       <tags>
         <tag>MySQL</tag>
@@ -123,10 +299,20 @@
     <url>/2023/06/05/Redis/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<h3 id="Redis实现分布式锁"><a href="#Redis实现分布式锁" class="headerlink" title="Redis实现分布式锁"></a><strong>Redis实现分布式锁</strong></h3><h4 id="单节点加锁"><a href="#单节点加锁" class="headerlink" title="单节点加锁"></a>单节点加锁</h4><p>1.通过setnx命令实现加锁 del命令解锁 但是有可能获取锁的节点宕机导致无法释放锁<br>2.通过setnx命令+设置锁过期时间解决节点宕机无法释放锁的情况，但是会出现业务流程执行时间过长而锁已经过期导致两个节点同时获取锁造成冲突<br>3.通过watch dog机制，当给节点加锁后，创建一个子线程给锁续期(redis的redission也是这种实现方案)，可以自定义续期间隔。<br>4.如果出现全局卡住的情况，可以减少看门狗续期间隔或者设置业务超时时间小于等于锁的过期时间，如果超时就中止业务<br>当有从节点的节点加锁时宕机后进行故障转移，但没有进行主从同步把锁同步过去导致锁丢失，这个时候就需要对多个节点加锁</p>
-<h4 id="多节点加锁-redlock"><a href="#多节点加锁-redlock" class="headerlink" title="多节点加锁-redlock"></a>多节点加锁-redlock</h4><p>需要对多个节点加锁后才认为加锁成功<br>1.首先获取当前毫秒时间戳，作为获取锁的开始时间。<br>2.在所有 N 个节点中按顺序进行加锁。在每个 Redis 节点加锁时，客户端要设置一个的等待时间，并且这个等待时间要小于锁过期时间。如果节点超时未响应，则忽略该节点，向下一个节点加锁。例如，如果锁过期时间为 10 秒，则等待时间可能设置在 5 ~ 50 毫秒范围内。这可以防止客户端在尝试与已关闭的 Redis节点通信而长时间处于阻塞状态：如果一个节点不可用，我们应该尽快尝试与下一个节点通信。<br>3.客户端通过当前时间减去步骤 1 中获得的时间戳，来计算加锁所用的时间。当且仅当客户端能够在超过半数的节点中完成加锁时，并且加锁的总时间小于锁有效期，则认为获得了锁。<br>4.如果获取锁成功，则锁的有效时间 &#x3D; 锁过期时间 - 加锁经过的时间。<br>5.如果客户端由于某种原因未能获得锁（要么无法在 N&#x2F;2 + 1 个节点中完成加锁，要么有效时间为负），它将对所有节点发出解锁命令（所有节点，包括未加锁成功的节点）。<br>Redlock 的解锁很简单，对所有节点发出解锁命令（就是删除锁）即可。</p>
-<h5 id="存在问题"><a href="#存在问题" class="headerlink" title="存在问题"></a><strong>存在问题</strong></h5><p>需要注意的是redlock并没有完全解决主节点宕机锁丢失的情况，假设有5个主节点附带5个从节点，用户1尝试获取锁 主节点1 2 3加锁成功后认为获取到锁，但是此时节点3宕机了，锁还没同步到从节点就完成了故障转移。而此时用户2尝试获取锁 主节点3 4 5加锁成功后认为获取到锁，这样用户1 2都认为获取到锁，这是不允许的</p>
-<h5 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a><strong>解决方案</strong></h5><p>只需要对一个主节点加锁，通过wait()等待所有从节点同步主节点的锁完成后才认为获取到了锁</p>
+<h3 id="单节点加锁"><a href="#单节点加锁" class="headerlink" title="单节点加锁"></a><strong>单节点加锁</strong></h3><p>1、通过setnx命令实现加锁 del命令解锁 但是有可能获取锁的节点宕机导致无法释放锁</p>
+<p>2、通过setnx命令+设置锁过期时间解决节点宕机无法释放锁的情况，但是会出现业务流程执行时间过长而锁已经过期导致两个节点同时获取锁造成冲突</p>
+<p>3、通过watch dog机制，当给节点加锁后，创建一个子线程给锁续期(redis的redission也是这种实现方案)，可以自定义续期间隔。</p>
+<p>4、如果出现全局卡住的情况，可以减少看门狗续期间隔或者设置业务超时时间小于等于锁的过期时间，如果超时就中止业务</p>
+<p>当有从节点的节点加锁时宕机后进行故障转移，但没有进行主从同步把锁同步过去导致锁丢失，这个时候就需要对多个节点加锁</p>
+<h3 id="多节点加锁-redlock"><a href="#多节点加锁-redlock" class="headerlink" title="多节点加锁-redlock"></a><strong>多节点加锁-redlock</strong></h3><p>需要对多个节点加锁后才认为加锁成功</p>
+<p>1、首先获取当前毫秒时间戳，作为获取锁的开始时间。</p>
+<p>2、在所有 N 个节点中按顺序进行加锁。在每个 Redis 节点加锁时，客户端要设置一个的等待时间，并且这个等待时间要小于锁过期时间。如果节点超时未响应，则忽略该节点，向下一个节点加锁。例如，如果锁过期时间为 10 秒，则等待时间可能设置在 5 ~ 50 毫秒范围内。这可以防止客户端在尝试与已关闭的 Redis节点通信而长时间处于阻塞状态：如果一个节点不可用，我们应该尽快尝试与下一个节点通信。</p>
+<p>3、客户端通过当前时间减去步骤 1 中获得的时间戳，来计算加锁所用的时间。当且仅当客户端能够在超过半数的节点中完成加锁时，并且加锁的总时间小于锁有效期，则认为获得了锁。</p>
+<p>4、如果获取锁成功，则锁的有效时间 &#x3D; 锁过期时间 - 加锁经过的时间。</p>
+<p>5、如果客户端由于某种原因未能获得锁（要么无法在 N&#x2F;2 + 1 个节点中完成加锁，要么有效时间为负），它将对所有节点发出解锁命令（所有节点，包括未加锁成功的节点）。</p>
+<p>Redlock 的解锁很简单，对所有节点发出解锁命令（就是删除锁）即可</p>
+<h3 id="存在问题"><a href="#存在问题" class="headerlink" title="存在问题"></a><strong>存在问题</strong></h3><p>需要注意的是redlock并没有完全解决主节点宕机锁丢失的情况s，假设有5个主节点附带5个从节点，用户1尝试获取锁 主节点1 2 3加锁成功后认为获取到锁，但是此时节点3宕机了，锁还没同步到从节点就完成了故障转移。而此时用户2尝试获取锁 主节点3 4 5加锁成功后认为获取到锁，这样用户1 2都认为获取到锁，这是不允许的</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a><strong>解决方案</strong></h3><p>只需要对一个主节点加锁，通过wait()等待所有从节点同步主节点的锁完成后才认为获取到了锁</p>
 ]]></content>
       <tags>
         <tag>Redis</tag>
@@ -138,29 +324,55 @@
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..                 
 </code></pre>
 <h4 id="线程池及核心参数"><a href="#线程池及核心参数" class="headerlink" title="线程池及核心参数"></a>线程池及核心参数</h4><p>线程池就是管理一系列线程的资源池，为了减少每次获取资源的消耗，提高对资源的利用率、响应速度及线程的可管理性，线程池还维护一些基本统计信息，如已完成任务的数量</p>
-<h4 id="线程池参数"><a href="#线程池参数" class="headerlink" title="线程池参数"></a>线程池参数</h4><p><strong>corePoolSize：</strong>任务队列中的任务未达到队列容量时， 最大可以同时运行的线程数量<br><strong>maximumPoolSize：</strong>任务队列中存放的任务达到队列容量 时，当前可以同时运行的线程数量变为最大线程数<br><strong>keepAliveTime：</strong>线程池中的线程数量大于corePoolSize的时候，如果这时没有新的任务提交，多余的空闲线程不会立即销毁，而是会等待，直到等待的时间超过了keepAliveTime才会被回收销毁，线程池回收线程时，会对核心线程和非核心线 程一视同仁，直到线程池中线程的数量等于corePoolSize,回收过程才会停止<br><strong>Unit：</strong>设置存活时间单位 (TimeUnit.Seconds)  分 (Time.Minutes)<br><strong>任务队列 workQueue：</strong>新任务来的时候会先判断当前运行的线   程数量是否达到核心线程数，如果达到 的话，新任务就会被存放在队列中 BlockingQueue<Runable> work &#x3D;new LinkedBlockingQueue&lt;&gt;()；<br><strong>线程工厂 threadFactory</strong><br><strong>饱和策略 rejectExecutorHandler</strong> </Runable></p>
-<h4 id="饱和策略"><a href="#饱和策略" class="headerlink" title="饱和策略"></a>饱和策略</h4><p>RejectExecutorHandler handler&#x3D;new ThreadPoolExecutor.AbortPolicy()<br><strong>AbortPolicy：</strong>默认策略，当线程池到达最大容量抛出rejectExecutorException<br><strong>CallerRunsPolicy：</strong>当线程池满时会将任务交给调用者执行，允许任务提交者执行任务<br><strong>DiscardOldestPolicy：</strong>当线程池满时丢弃队列最老的任务请求，然后尝试重新提交当前任务<br><strong>DiscardPolicy：</strong>丢弃队列中无法执行的任务，不会给出通知和抛出异常</p>
-<h4 id="阻塞队列"><a href="#阻塞队列" class="headerlink" title="阻塞队列"></a>阻塞队列</h4><p><strong>ArrayBlockingQueue</strong><br>基于环形数组的有界阻塞队列，按FIFO存储元素，队列满时阻塞写操作，空时阻塞读操作，无需指定初始容量<br><strong>LinkedBlockingQueue</strong><br>基于链表实现的可选有界或无界阻塞队列  无固定容量限制，队列满时阻塞写操作，空时阻塞读操作<br><strong>SynchronousQueue同步队列</strong><br>没有容量 不存储元素 每次插入操作必须等待另一个线程的移除操作，可用于线程间的数据交换<br><strong>DelayQueue</strong><br>基于优先队列实现的延迟阻塞队列，可以存储实现delayed接口的元素，每个元素都有过期时间，元素过期后才能从队列取出<br><strong>PriorityBlockingQueue</strong><br>具有优先级的无界阻塞队列,可以按照元素优先级排序,优先级通过Comparator参数实现。</p>
+<h4 id="线程池参数"><a href="#线程池参数" class="headerlink" title="线程池参数"></a>线程池参数</h4><p><strong>corePoolSize：</strong>任务队列中的任务未达到队列容量时， 最大可以同时运行的线程数量</p>
+<p><strong>maximumPoolSize：</strong>任务队列中存放的任务达到队列容量 时，当前可以同时运行的线程数量变为最大线程数</p>
+<p><strong>keepAliveTime：</strong>线程池中的线程数量大于corePoolSize的时候，如果这时没有新的任务提交，多余的空闲线程不会立即销毁，而是会等待，直到等待的时间超过了keepAliveTime才会被回收销毁，线程池回收线程时，会对核心线程和非核心线 程一视同仁，直到线程池中线程的数量等于corePoolSize,回收过程才会停止</p>
+<p><strong>Unit：</strong>设置存活时间单位 (TimeUnit.Seconds)  分 (Time.Minutes)</p>
+<p><strong>任务队列 workQueue：</strong>新任务来的时候会先判断当前运行的线   程数量是否达到核心线程数，如果达到 的话，新任务就会被存放在队列中 </p>
+<p><strong>线程工厂 threadFactory</strong></p>
+<p><strong>饱和策略 rejectExecutorHandler</strong> </p>
+<h4 id="饱和策略"><a href="#饱和策略" class="headerlink" title="饱和策略"></a>饱和策略</h4><p>RejectExecutorHandler handler&#x3D;new ThreadPoolExecutor.AbortPolicy()<br><strong>AbortPolicy：</strong>默认策略，当线程池到达最大容量抛出rejectExecutorException</p>
+<p><strong>CallerRunsPolicy：</strong>当线程池满时会将任务交给调用者执行，允许任务提交者执行任务</p>
+<p><strong>DiscardOldestPolicy：</strong>当线程池满时丢弃队列最老的任务请求，然后尝试重新提交当前任务</p>
+<p><strong>DiscardPolicy：</strong>丢弃队列中无法执行的任务，不会给出通知和抛出异常</p>
+<h4 id="阻塞队列"><a href="#阻塞队列" class="headerlink" title="阻塞队列"></a>阻塞队列</h4><h5 id="ArrayBlockingQueue"><a href="#ArrayBlockingQueue" class="headerlink" title="ArrayBlockingQueue"></a><strong>ArrayBlockingQueue</strong></h5><p>基于环形数组的有界阻塞队列，按FIFO存储元素，队列满时阻塞写操作，空时阻塞读操作，无需指定初始容量</p>
+<h5 id="LinkedBlockingQueue"><a href="#LinkedBlockingQueue" class="headerlink" title="LinkedBlockingQueue"></a><strong>LinkedBlockingQueue</strong></h5><p>基于链表实现的可选有界或无界阻塞队列  无固定容量限制，队列满时阻塞写操作，空时阻塞读操作</p>
+<h5 id="SynchronousQueue同步队列"><a href="#SynchronousQueue同步队列" class="headerlink" title="SynchronousQueue同步队列"></a><strong>SynchronousQueue同步队列</strong></h5><p>没有容量 不存储元素 每次插入操作必须等待另一个线程的移除操作，可用于线程间的数据交换</p>
+<h5 id="DelayQueue"><a href="#DelayQueue" class="headerlink" title="DelayQueue"></a><strong>DelayQueue</strong></h5><p>基于优先队列实现的延迟阻塞队列，可以存储实现delayed接口的元素，每个元素都有过期时间，元素过期后才能从队列取出</p>
+<h5 id="PriorityBlockingQueue"><a href="#PriorityBlockingQueue" class="headerlink" title="PriorityBlockingQueue"></a><strong>PriorityBlockingQueue</strong></h5><p>具有优先级的无界阻塞队列,可以按照元素优先级排序,优先级通过Comparator参数实现。</p>
 <h4 id="线程池执行流程"><a href="#线程池执行流程" class="headerlink" title="线程池执行流程"></a>线程池执行流程</h4><p>有任务到达时，创建核心线程去执行，如果任务数量超过核心线程数，加入阻塞队列，队列满了创建非核心线程，超过最大线程数采取拒绝策略</p>
-<h4 id="创建线程池的方式及参数"><a href="#创建线程池的方式及参数" class="headerlink" title="创建线程池的方式及参数"></a>创建线程池的方式及参数</h4><p><strong>1)ThreadPoolExecutor构造函数来创建</strong><br>ThreadPoolExecutor executor &#x3D; new ThreadPoolExecutor(corePoolSize,maximumPoolSize,  keepAliveTime,       unit,workQueue,threadFactory,handler)<br>核心参数corePoolSize maximumPoolSize  workQueue是必须的<br><strong>2)通过 Executor 框架的工具Executors来创建</strong><br>FixedThreadPool: 固定线程数量n的线程池 executorService es &#x3D; Executors.newFixedThreadPool(n)；<br>singleThreadExecutor: 只有一个线程的线程池，若任务数多于1个则添加到任务队列中<br>cachedThreadPool:返回一个根据实际情况调整线程数量的线程池 超过默认时间60s没有新任务线程超时自动销毁<br>scheduleThreadPool: 返回在给定的延迟后运行任务或定期执行任务的线程池</p>
-<h4 id="线程创建方式"><a href="#线程创建方式" class="headerlink" title="线程创建方式"></a>线程创建方式</h4><p><strong>1)继承thread类 重写run方法</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyThread extends Thread &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        MyThread mt = new MyThread();</span><br><span class="line">        mt.start();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="创建线程池的方式及参数"><a href="#创建线程池的方式及参数" class="headerlink" title="创建线程池的方式及参数"></a>创建线程池的方式及参数</h4><h5 id="1-ThreadPoolExecutor构造函数来创建"><a href="#1-ThreadPoolExecutor构造函数来创建" class="headerlink" title="1)ThreadPoolExecutor构造函数来创建"></a><strong>1)ThreadPoolExecutor构造函数来创建</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ThreadPoolExecutor executor = new ThreadPoolExecutor(corePoolSize,</span><br><span class="line">maximumPoolSize, keepAliveTime,unit,workQueue,threadFactory,handler)</span><br></pre></td></tr></table></figure>
 
-<p><strong>2)实现runnable接口 重写run方法</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyRunnable implements Runnable &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    MyRunnable myRunnable = new MyRunnable();</span><br><span class="line">    Thread thread = new Thread(myRunnable);</span><br><span class="line">    thread.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>核心参数corePoolSize maximumPoolSize  workQueue是必须的</p>
+<h5 id="2-通过-Executor-框架的工具Executors来创建"><a href="#2-通过-Executor-框架的工具Executors来创建" class="headerlink" title="2)通过 Executor 框架的工具Executors来创建"></a><strong>2)通过 Executor 框架的工具Executors来创建</strong></h5><h4 id="线程创建方式"><a href="#线程创建方式" class="headerlink" title="线程创建方式"></a>线程创建方式</h4><h5 id="1-继承thread类-重写run方法"><a href="#1-继承thread类-重写run方法" class="headerlink" title="1)继承thread类 重写run方法"></a><strong>1)继承thread类 重写run方法</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyThread extends Thread &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        MyThread mt = new MyThread();</span><br><span class="line">        mt.start();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><strong>3)实现callback接口和futuretask 重写call方法</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyCallable implements Callable&lt;Integer&gt; &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public Integer call() throws exception &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    MyCallable mc = new MyCallable();</span><br><span class="line">    FutureTask ft = new FutureTask(mc)</span><br><span class="line">    ExecutorService es = Executors.new</span><br><span class="line">    SingleThreadExecutor();</span><br><span class="line">    es.submit(ft);</span><br><span class="line">    es.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="2-实现runnable接口-重写run方法"><a href="#2-实现runnable接口-重写run方法" class="headerlink" title="2)实现runnable接口 重写run方法"></a><strong>2)实现runnable接口 重写run方法</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyRunnable implements Runnable &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    MyRunnable myRunnable = new MyRunnable();</span><br><span class="line">    Thread thread = new Thread(myRunnable);</span><br><span class="line">    thread.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><strong>4)使用线程池创建</strong> </p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ExecutorService es = Executors.newFixedThreadPool(5);</span><br><span class="line">    es.submit(()-&gt; &#123;</span><br><span class="line">    线程要执行的任务</span><br><span class="line">    &#125;);</span><br><span class="line">es.shutdown();</span><br></pre></td></tr></table></figure>
+<h5 id="3-实现callback接口和futuretask-重写call方法"><a href="#3-实现callback接口和futuretask-重写call方法" class="headerlink" title="3)实现callback接口和futuretask 重写call方法"></a><strong>3)实现callback接口和futuretask 重写call方法</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">class MyCallable implements Callable&lt;Integer&gt; &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public Integer call() throws exception &#123;</span><br><span class="line">    // 线程要执行的任务</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    MyCallable mc = new MyCallable();</span><br><span class="line">    FutureTask ft = new FutureTask(mc)</span><br><span class="line">    ExecutorService es = Executors.new</span><br><span class="line">    SingleThreadExecutor();</span><br><span class="line">    es.submit(ft);</span><br><span class="line">    es.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h4 id="为什么核心线程满了之后总是先加入阻塞队列而不是加入总线程或创建线程"><a href="#为什么核心线程满了之后总是先加入阻塞队列而不是加入总线程或创建线程" class="headerlink" title="为什么核心线程满了之后总是先加入阻塞队列而不是加入总线程或创建线程"></a>为什么核心线程满了之后总是先加入阻塞队列而不是加入总线程或创建线程</h4><p>线程池创建线程需要获取mainlock这个全局锁，会影响并发效率，所以使用阻塞队列把创建核心线程与创建最大线程隔离开来，起一个缓冲的作用。在执行execute()方法时尽可能的避免获取全局锁<br>阻塞队列可以保存任务，当队列没有任务时阻塞获取任务的线程、使其进入wait状态，释放CPU资源<br>阻塞队列自带阻塞和唤醒功能，不需要额外的处理，无任务时线程池利用阻塞队列的take方法挂起，从而保证核心线程的存活，不至于一直占用CPU资源</p>
-<h4 id="线程池种类"><a href="#线程池种类" class="headerlink" title="线程池种类"></a>线程池种类</h4><p><strong>singleThreadPool：</strong>只有一个核心线程，所有任务都在一个线程上顺序执行<br><strong>fixedThreadPool：</strong>核心线程与最大线程数一样 ，超过最大线程数会将任务放在任务队列中<br><strong>cachedThreadPool：</strong>核心线程数为0 最大线程数为int最大值 空闲线程在60s后回收<br><strong>scheduleThreadPool：</strong>核心线程数固定，支持定时或周期性执行任务,<br><strong>workStealingPool(jdk8)：</strong> 动态线程池，内部使用forkjoinPool实现，利用分层工作窃取算法处理任务，每个工作线程维护自己的本地队列，同时可以从其他线程的队列中窃取任务，线程数根据cpu核心数调整</p>
-<h4 id="为什么不推荐使用内置线程池？"><a href="#为什么不推荐使用内置线程池？" class="headerlink" title="为什么不推荐使用内置线程池？"></a>为什么不推荐使用内置线程池？</h4><p>1)使用线程池的好处是减少在创建和销毁线程上所消耗的时间以及系统资源开销，解决资源不足的问题。如果不使用线程池,有可能会造成系统创建大量同类线程而导致消耗完内存或者过度上下文切换<br>2)线程池不允许使用 Executors 去创建，而是通过 ThreadPoolExecutor</p>
-<h4 id="12-上下文切换"><a href="#12-上下文切换" class="headerlink" title="12.上下文切换"></a>12.上下文切换</h4><p>任务在执行完 CPU 时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。任务从保存到再加载的过程就是一次上下文切换。</p>
-<h4 id="13-线程数设置"><a href="#13-线程数设置" class="headerlink" title="13.线程数设置"></a>13.线程数设置</h4><p>N是CPU核心数<br>CPU 密集型任务(N+1)：利用CPU 计算能力的任务比如在内存中对大量数据进行排序 复杂算法<br>I&#x2F;O 密集型任务(2N+1)：涉及到网络传输&#x2F;文件读取下载&#x2F;数据库交互 系统会用大部分的时间来处理 I&#x2F;O 交互，而线程在处理 I&#x2F;O 的时间段内不会占用 CPU 来处理，这时就可以将 CPU 交出给其它线程使用。因此在 I&#x2F;O 密集型任务的应用中，我们可以多配置一些线程</p>
-<p>比CPU核心数多出来的一个线程是为了防止线程偶发的缺页中断或其它原因导致的任务暂停而带来的影响</p>
+<h5 id="4-使用线程池创建"><a href="#4-使用线程池创建" class="headerlink" title="4)使用线程池创建"></a><strong>4)使用线程池创建</strong></h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ExecutorService es = Executors.newFixedThreadPool(5);</span><br><span class="line">    es.submit(()-&gt; &#123;</span><br><span class="line">    线程要执行的任务</span><br><span class="line">    &#125;);</span><br><span class="line">es.shutdown();</span><br></pre></td></tr></table></figure>
+
+<h4 id="核心线程满了之后先加入阻塞队列而不是创建新的线程"><a href="#核心线程满了之后先加入阻塞队列而不是创建新的线程" class="headerlink" title="核心线程满了之后先加入阻塞队列而不是创建新的线程"></a>核心线程满了之后先加入阻塞队列而不是创建新的线程</h4><ul>
+<li>线程池创建线程需要获取mainlock这个全局锁，会影响并发效率，所以使用阻塞队列把创建核心线程与创建最大线程隔离开来，起一个缓冲的作用。在执行execute()方法时尽可能的避免获取全局锁</li>
+<li>阻塞队列可以保存任务，当队列没有任务时阻塞获取任务的线程、使其进入wait状态，释放CPU资源</li>
+<li>阻塞队列自带阻塞和唤醒功能，不需要额外的处理，无任务时线程池利用阻塞队列的take方法挂起，从而保证核心线程的存活，不至于一直占用CPU资源</li>
+</ul>
+<h4 id="线程池种类"><a href="#线程池种类" class="headerlink" title="线程池种类"></a>线程池种类</h4><p><strong>singleThreadPool：</strong>只有一个核心线程，所有任务都在一个线程上顺序执行 </p>
+<p><strong>fixedThreadPool：</strong>核心线程与最大线程数一样 ，超过最大线程数会将任务放在任务队列中  </p>
+<p><strong>cachedThreadPool：</strong>核心线程数为0 最大线程数为int最大值 空闲线程在60s后回收</p>
+<p><strong>scheduleThreadPool：</strong>核心线程数固定，支持定时或周期性执行任务</p>
+<p><strong>workStealingPool(jdk8)：</strong> 动态线程池，内部使用forkjoinPool实现，利用分层工作窃取算法处理任务，每个工作线程维护自己的本地队列，同时可以从其他线程的队列中窃取任务，线程数根据cpu核心数调整</p>
+<h4 id="不使用内置线程池"><a href="#不使用内置线程池" class="headerlink" title="不使用内置线程池"></a>不使用内置线程池</h4><ul>
+<li>使用线程池的好处是减少在创建和销毁线程上所消耗的时间以及系统资源开销，解决资源不足的问题。如果不使用线程池,有可能会造成系统创建大量同类线程而导致消耗完内存或者过度上下文切换</li>
+<li>线程池不允许使用 Executors 去创建，而是通过 ThreadPoolExecutor</li>
+</ul>
+<h4 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h4><p>任务在执行完 CPU 时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。任务从保存到再加载的过程就是一次上下文切换。</p>
+<h4 id="线程数设置"><a href="#线程数设置" class="headerlink" title="线程数设置"></a>线程数设置</h4><p>N是CPU核心数</p>
+<ul>
+<li>CPU 密集型任务(N+1)：利用CPU 计算能力的任务比如在内存中对大量数据进行排序 复杂算法</li>
+<li>I&#x2F;O 密集型任务(2N+1)：涉及到网络传输&#x2F;文件读取下载&#x2F;数据库交互 系统会用大部分的时间来处理 I&#x2F;O 交互，而线程在处理 I&#x2F;O 的时间段内不会占用 CPU 来处理，这时就可以将 CPU 交出给其它线程使用。因此在 I&#x2F;O 密集型任务的应用中，我们可以多配置一些线程</li>
+<li>比CPU核心数多出来的一个线程是为了防止线程偶发的缺页中断或其它原因导致的任务暂停而带来的影响</li>
+</ul>
 ]]></content>
       <tags>
         <tag>线程池的使用</tag>
@@ -171,14 +383,49 @@
     <url>/2023/05/15/RocketMQ/</url>
     <content><![CDATA[<pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>RocketMQ是一款高性能、高吞吐量、低延迟、高可用、高可靠（具备金融级稳定性）的基于队列模型的分布式消息中间件<br>RoctetMQ 基本架构<br>NameServer，Broker，Producer 生产者，Consumer 消费者，它们对应了：发现、发、存、收，为了保证高可用，一般每一部分都是集群部署的<br>NameServer<br>NameServer是一个无状态的服务器，角色类似于 Kafka 使用的 Zookeeper，但比 Zookeeper 更轻量。<br>特点：<br>每个 NameServer 结点之间是相互独立，彼此没有任何信息交互。<br>Nameserver 被设计成几乎是无状态的，通过部署多个结点来标识自己是一个伪集群，Producer 在发送消息前从 NameServer 中获取 Topic 的路由信息也就是发往哪个 Broker，Consumer 也会定时从 NameServer 获取 Topic 的路由信息，Broker 在启动时会向 NameServer 注册，并定时进行心跳连接，且定时同步维护的 Topic 到 NameServer。<br>功能：<br>1、和 Broker 结点保持长连接。<br>2、维护 Topic 的路由信息。</p>
-<p>Broker<br>消息存储和中转角色，负责存储和转发消息。<br>Broker 内部维护着一个个 Consumer Queue，用来存储消息的索引，真正存储消息的地方是 CommitLog（日志文件）。<br>RocketMQ存储-图片来源官网<br>RocketMQ存储-图片来源官网<br>单个 Broker 与所有的 Nameserver 保持着长连接和心跳，并会定时将 Topic 信息同步到 NameServer，和 NameServer 的通信底层是通过 Netty 实现的。</p>
-<p>Producer<br>消息生产者，业务端负责发送消息，由用户自行实现和分布式部署。<br>Producer由用户进行分布式部署，消息由Producer通过多种负载均衡模式发送到Broker集群，发送低延时，支持快速失败。</p>
-<p>RocketMQ 提供了三种方式发送消息：同步、异步和单向<br>同步发送：同步发送指消息发送方发出数据后会在收到接收方发回响应之后才发下一个数据包。一般用于重要通知消息，例如重要通知邮件、营销短信。<br>异步发送：异步发送指发送方发出数据后，不等接收方发回响应，接着发送下个数据包，一般用于可能链路耗时较长而对响应时间敏感的业务场景，例如用户视频上传后通知启动转码服务。<br>单向发送：单向发送是指只负责发送消息而不等待服务器回应且没有回调函数触发，适用于某些耗时非常短但对可靠性要求并不高的场景，例如日志收集。</p>
-<p>Consumer<br>消息消费者，负责消费消息，一般是后台系统负责异步消费。<br>Consumer也由用户部署，支持 PUSH 和 PULL 两种消费模式，支持集群消费和广播消费，提供实时的消息订阅机制。<br>Pull：拉取型消费者（Pull Consumer）主动从消息服务器拉取信息，只要批量拉取到消息，用户应用就会启动消费过程，所以 Pull 称为主动消费型。<br>Push：推送型消费者（Push Consumer）封装了消息的拉取、消费进度和其他的内部维护工作，将消息到达时执行的回调接口留给用户应用程序来实现。所以 Push 称为被动消费类型，但其实从实现上看还是从消息服务器中拉取消息，不同于 Pull 的是 Push 首先要注册消费监听器，当监听器处触发后才开始消费消息。</p>
-<p>消息模型<br>消息队列有两种模型：队列模型和发布&#x2F;订阅模型<br>队列模型<br>这是最初的一种消息队列模型，对应着消息队列“发-存-收”的模型。生产者往某个队列里面发送消息，一个队列可以存储多个生产者的消息，一个队列也可以有多个消费者，但是消费者之间是竞争关系，也就是说每条消息只能被一个消费者消费<br>发布&#x2F;订阅模型<br>如果需要将一份消息数据分发给多个消费者，并且每个消费者都要求收到全量的消息。很显然，队列模型无法满足这个需求。解决的方式就是发布&#x2F;订阅模型。<br>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。“订阅”在这里既是一个动作，同时还可以认为是主题在消费时的一个逻辑副本，每份订阅中，订阅者都可以接收到主题的所有消息</p>
-<p>RocketMQ 使用的消息模型是标准的发布-订阅模型，RocketMQ 本身的消息包括Message、Topic、Tag、Queue、Group和Offset组成</p>
-<p>消息消费模式<br>Clustering（集群消费）和Broadcasting（广播消费）<br>默认情况下就是集群消费，这种模式下一个消费者组共同消费一个主题的多个队列，一个队列只会被一个消费者消费，如果某个消费者挂掉，分组内其它消费者会接替挂掉的消费者继续消费。<br>广播消费消息会发给消费者组中的每一个消费者进行消费</p>
+<h4 id="RocketMQ介绍"><a href="#RocketMQ介绍" class="headerlink" title="RocketMQ介绍"></a>RocketMQ介绍</h4><p>RocketMQ是一款高性能、高吞吐量、低延迟、高可用、高可靠（具备金融级稳定性）的基于队列模型的分布式消息中间件</p>
+<h4 id="RoctetMQ-基本架构"><a href="#RoctetMQ-基本架构" class="headerlink" title="RoctetMQ 基本架构"></a>RoctetMQ 基本架构</h4><p>NameServer，Broker，Producer 生产者，Consumer 消费者，它们对应了：发现、发、存、收，为了保证高可用，一般每一部分都是集群部署的</p>
+<h4 id="NameServer"><a href="#NameServer" class="headerlink" title="NameServer"></a>NameServer</h4><p>NameServer是一个无状态的服务器，角色类似于 Kafka 使用的 Zookeeper，但比 Zookeeper 更轻量。<br>特点：</p>
+<ul>
+<li>每个 NameServer 结点之间是相互独立，彼此没有任何信息交互。</li>
+<li>Nameserver 被设计成几乎是无状态的，通过部署多个结点来标识自己是一个伪集群，Producer 在发送消息前从 NameServer 中获取 Topic 的路由信息也就是发往哪个 </li>
+<li>Broker，Consumer 也会定时从 NameServer 获取 Topic 的路由信息，Broker 在启动时会向 NameServer 注册，并定时进行心跳连接，且定时同步维护的 Topic 到 NameServer</li>
+</ul>
+<p>功能：</p>
+<ul>
+<li>和 Broker 结点保持长连接。</li>
+<li>维护 Topic 的路由信息。</li>
+</ul>
+<h4 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h4><ul>
+<li>消息存储和中转角色，负责存储和转发消息。</li>
+<li>Broker 内部维护着一个个 Consumer Queue，用来存储消息的索引，真正存储消息的地方是 CommitLog（日志文件）。</li>
+<li>单个 Broker 与所有的 Nameserver 保持着长连接和心跳，并会定时将 Topic 信息同步到 NameServer，和 NameServer 的通信底层是通过 Netty 实现的。</li>
+</ul>
+<h4 id="Producer"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</h4><ul>
+<li>消息生产者，业务端负责发送消息，由用户自行实现和分布式部署。</li>
+<li>Producer由用户进行分布式部署，消息由Producer通过多种负载均衡模式发送到Broker集群，发送低延时，支持快速失败。</li>
+</ul>
+<p>RocketMQ 提供了三种方式发送消息：同步、异步和单向</p>
+<ul>
+<li>同步发送：同步发送指消息发送方发出数据后会在收到接收方发回响应之后才发下一个数据包。一般用于重要通知消息，例如重要通知邮件、营销短信。</li>
+<li>异步发送：异步发送指发送方发出数据后，不等接收方发回响应，接着发送下个数据包，一般用于可能链路耗时较长而对响应时间敏感的业务场景，例如用户视频上传后通知启动转码服务。</li>
+<li>单向发送：单向发送是指只负责发送消息而不等待服务器回应且没有回调函数触发，适用于某些耗时非常短但对可靠性要求并不高的场景，例如日志收集。</li>
+</ul>
+<h4 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h4><ul>
+<li>消息消费者，负责消费消息，一般是后台系统负责异步消费。</li>
+<li>Consumer也由用户部署，支持 PUSH 和 PULL 两种消费模式，支持集群消费和广播消费，提供实时的消息订阅机制。</li>
+<li>Pull：拉取型消费者（Pull Consumer）主动从消息服务器拉取信息，只要批量拉取到消息，用户应用就会启动消费过程，所以 Pull 称为主动消费型。</li>
+<li>Push：推送型消费者（Push Consumer）封装了消息的拉取、消费进度和其他的内部维护工作，将消息到达时执行的回调接口留给用户应用程序来实现。所以 Push 称为被动消费类型，但其实从实现上看还是从消息服务器中拉取消息，不同于 Pull 的是 Push 首先要注册消费监听器，当监听器处触发后才开始消费消息。</li>
+</ul>
+<h3 id="消息模型"><a href="#消息模型" class="headerlink" title="消息模型"></a>消息模型</h3><p>消息队列有两种模型：队列模型和发布&#x2F;订阅模型</p>
+<h5 id="队列模型"><a href="#队列模型" class="headerlink" title="队列模型"></a>队列模型</h5><p>这是最初的一种消息队列模型，对应着消息队列“发-存-收”的模型。生产者往某个队列里面发送消息，一个队列可以存储多个生产者的消息，一个队列也可以有多个消费者，但是消费者之间是竞争关系，也就是说每条消息只能被一个消费者消费</p>
+<h5 id="发布-订阅模型"><a href="#发布-订阅模型" class="headerlink" title="发布&#x2F;订阅模型"></a>发布&#x2F;订阅模型</h5><ul>
+<li>如果需要将一份消息数据分发给多个消费者，并且每个消费者都要求收到全量的消息。很显然，队列模型无法满足这个需求。解决的方式就是发布&#x2F;订阅模型。</li>
+<li>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。每份订阅中，订阅者都可以接收到主题的所有消息</li>
+<li>RocketMQ 使用的消息模型是标准的发布-订阅模型，RocketMQ 本身的消息包括Message、Topic、Tag、Queue、Group和Offset组成</li>
+</ul>
+<h3 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h3><h5 id="Clustering（集群消费）"><a href="#Clustering（集群消费）" class="headerlink" title="Clustering（集群消费）"></a>Clustering（集群消费）</h5><p>默认情况下就是集群消费，这种模式下一个消费者组共同消费一个主题的多个队列，一个队列只会被一个消费者消费，如果某个消费者挂掉，分组内其它消费者会接替挂掉的消费者继续消费</p>
+<h5 id="Broadcasting（广播消费）"><a href="#Broadcasting（广播消费）" class="headerlink" title="Broadcasting（广播消费）"></a>Broadcasting（广播消费）</h5><p>广播消费消息会发给消费者组中的每一个消费者进行消费</p>
 ]]></content>
       <tags>
         <tag>RocketMQ</tag>

@@ -71,14 +71,49 @@
         <div class="content markdown">
             <pre><code>                                                                                                                                                                                                                        ..
 </code></pre>
-<p>RocketMQ是一款高性能、高吞吐量、低延迟、高可用、高可靠（具备金融级稳定性）的基于队列模型的分布式消息中间件<br>RoctetMQ 基本架构<br>NameServer，Broker，Producer 生产者，Consumer 消费者，它们对应了：发现、发、存、收，为了保证高可用，一般每一部分都是集群部署的<br>NameServer<br>NameServer是一个无状态的服务器，角色类似于 Kafka 使用的 Zookeeper，但比 Zookeeper 更轻量。<br>特点：<br>每个 NameServer 结点之间是相互独立，彼此没有任何信息交互。<br>Nameserver 被设计成几乎是无状态的，通过部署多个结点来标识自己是一个伪集群，Producer 在发送消息前从 NameServer 中获取 Topic 的路由信息也就是发往哪个 Broker，Consumer 也会定时从 NameServer 获取 Topic 的路由信息，Broker 在启动时会向 NameServer 注册，并定时进行心跳连接，且定时同步维护的 Topic 到 NameServer。<br>功能：<br>1、和 Broker 结点保持长连接。<br>2、维护 Topic 的路由信息。</p>
-<p>Broker<br>消息存储和中转角色，负责存储和转发消息。<br>Broker 内部维护着一个个 Consumer Queue，用来存储消息的索引，真正存储消息的地方是 CommitLog（日志文件）。<br>RocketMQ存储-图片来源官网<br>RocketMQ存储-图片来源官网<br>单个 Broker 与所有的 Nameserver 保持着长连接和心跳，并会定时将 Topic 信息同步到 NameServer，和 NameServer 的通信底层是通过 Netty 实现的。</p>
-<p>Producer<br>消息生产者，业务端负责发送消息，由用户自行实现和分布式部署。<br>Producer由用户进行分布式部署，消息由Producer通过多种负载均衡模式发送到Broker集群，发送低延时，支持快速失败。</p>
-<p>RocketMQ 提供了三种方式发送消息：同步、异步和单向<br>同步发送：同步发送指消息发送方发出数据后会在收到接收方发回响应之后才发下一个数据包。一般用于重要通知消息，例如重要通知邮件、营销短信。<br>异步发送：异步发送指发送方发出数据后，不等接收方发回响应，接着发送下个数据包，一般用于可能链路耗时较长而对响应时间敏感的业务场景，例如用户视频上传后通知启动转码服务。<br>单向发送：单向发送是指只负责发送消息而不等待服务器回应且没有回调函数触发，适用于某些耗时非常短但对可靠性要求并不高的场景，例如日志收集。</p>
-<p>Consumer<br>消息消费者，负责消费消息，一般是后台系统负责异步消费。<br>Consumer也由用户部署，支持 PUSH 和 PULL 两种消费模式，支持集群消费和广播消费，提供实时的消息订阅机制。<br>Pull：拉取型消费者（Pull Consumer）主动从消息服务器拉取信息，只要批量拉取到消息，用户应用就会启动消费过程，所以 Pull 称为主动消费型。<br>Push：推送型消费者（Push Consumer）封装了消息的拉取、消费进度和其他的内部维护工作，将消息到达时执行的回调接口留给用户应用程序来实现。所以 Push 称为被动消费类型，但其实从实现上看还是从消息服务器中拉取消息，不同于 Pull 的是 Push 首先要注册消费监听器，当监听器处触发后才开始消费消息。</p>
-<p>消息模型<br>消息队列有两种模型：队列模型和发布&#x2F;订阅模型<br>队列模型<br>这是最初的一种消息队列模型，对应着消息队列“发-存-收”的模型。生产者往某个队列里面发送消息，一个队列可以存储多个生产者的消息，一个队列也可以有多个消费者，但是消费者之间是竞争关系，也就是说每条消息只能被一个消费者消费<br>发布&#x2F;订阅模型<br>如果需要将一份消息数据分发给多个消费者，并且每个消费者都要求收到全量的消息。很显然，队列模型无法满足这个需求。解决的方式就是发布&#x2F;订阅模型。<br>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。“订阅”在这里既是一个动作，同时还可以认为是主题在消费时的一个逻辑副本，每份订阅中，订阅者都可以接收到主题的所有消息</p>
-<p>RocketMQ 使用的消息模型是标准的发布-订阅模型，RocketMQ 本身的消息包括Message、Topic、Tag、Queue、Group和Offset组成</p>
-<p>消息消费模式<br>Clustering（集群消费）和Broadcasting（广播消费）<br>默认情况下就是集群消费，这种模式下一个消费者组共同消费一个主题的多个队列，一个队列只会被一个消费者消费，如果某个消费者挂掉，分组内其它消费者会接替挂掉的消费者继续消费。<br>广播消费消息会发给消费者组中的每一个消费者进行消费</p>
+<h4 id="RocketMQ介绍"><a href="#RocketMQ介绍" class="headerlink" title="RocketMQ介绍"></a>RocketMQ介绍</h4><p>RocketMQ是一款高性能、高吞吐量、低延迟、高可用、高可靠（具备金融级稳定性）的基于队列模型的分布式消息中间件</p>
+<h4 id="RoctetMQ-基本架构"><a href="#RoctetMQ-基本架构" class="headerlink" title="RoctetMQ 基本架构"></a>RoctetMQ 基本架构</h4><p>NameServer，Broker，Producer 生产者，Consumer 消费者，它们对应了：发现、发、存、收，为了保证高可用，一般每一部分都是集群部署的</p>
+<h4 id="NameServer"><a href="#NameServer" class="headerlink" title="NameServer"></a>NameServer</h4><p>NameServer是一个无状态的服务器，角色类似于 Kafka 使用的 Zookeeper，但比 Zookeeper 更轻量。<br>特点：</p>
+<ul>
+<li>每个 NameServer 结点之间是相互独立，彼此没有任何信息交互。</li>
+<li>Nameserver 被设计成几乎是无状态的，通过部署多个结点来标识自己是一个伪集群，Producer 在发送消息前从 NameServer 中获取 Topic 的路由信息也就是发往哪个 </li>
+<li>Broker，Consumer 也会定时从 NameServer 获取 Topic 的路由信息，Broker 在启动时会向 NameServer 注册，并定时进行心跳连接，且定时同步维护的 Topic 到 NameServer</li>
+</ul>
+<p>功能：</p>
+<ul>
+<li>和 Broker 结点保持长连接。</li>
+<li>维护 Topic 的路由信息。</li>
+</ul>
+<h4 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h4><ul>
+<li>消息存储和中转角色，负责存储和转发消息。</li>
+<li>Broker 内部维护着一个个 Consumer Queue，用来存储消息的索引，真正存储消息的地方是 CommitLog（日志文件）。</li>
+<li>单个 Broker 与所有的 Nameserver 保持着长连接和心跳，并会定时将 Topic 信息同步到 NameServer，和 NameServer 的通信底层是通过 Netty 实现的。</li>
+</ul>
+<h4 id="Producer"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</h4><ul>
+<li>消息生产者，业务端负责发送消息，由用户自行实现和分布式部署。</li>
+<li>Producer由用户进行分布式部署，消息由Producer通过多种负载均衡模式发送到Broker集群，发送低延时，支持快速失败。</li>
+</ul>
+<p>RocketMQ 提供了三种方式发送消息：同步、异步和单向</p>
+<ul>
+<li>同步发送：同步发送指消息发送方发出数据后会在收到接收方发回响应之后才发下一个数据包。一般用于重要通知消息，例如重要通知邮件、营销短信。</li>
+<li>异步发送：异步发送指发送方发出数据后，不等接收方发回响应，接着发送下个数据包，一般用于可能链路耗时较长而对响应时间敏感的业务场景，例如用户视频上传后通知启动转码服务。</li>
+<li>单向发送：单向发送是指只负责发送消息而不等待服务器回应且没有回调函数触发，适用于某些耗时非常短但对可靠性要求并不高的场景，例如日志收集。</li>
+</ul>
+<h4 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h4><ul>
+<li>消息消费者，负责消费消息，一般是后台系统负责异步消费。</li>
+<li>Consumer也由用户部署，支持 PUSH 和 PULL 两种消费模式，支持集群消费和广播消费，提供实时的消息订阅机制。</li>
+<li>Pull：拉取型消费者（Pull Consumer）主动从消息服务器拉取信息，只要批量拉取到消息，用户应用就会启动消费过程，所以 Pull 称为主动消费型。</li>
+<li>Push：推送型消费者（Push Consumer）封装了消息的拉取、消费进度和其他的内部维护工作，将消息到达时执行的回调接口留给用户应用程序来实现。所以 Push 称为被动消费类型，但其实从实现上看还是从消息服务器中拉取消息，不同于 Pull 的是 Push 首先要注册消费监听器，当监听器处触发后才开始消费消息。</li>
+</ul>
+<h3 id="消息模型"><a href="#消息模型" class="headerlink" title="消息模型"></a>消息模型</h3><p>消息队列有两种模型：队列模型和发布&#x2F;订阅模型</p>
+<h5 id="队列模型"><a href="#队列模型" class="headerlink" title="队列模型"></a>队列模型</h5><p>这是最初的一种消息队列模型，对应着消息队列“发-存-收”的模型。生产者往某个队列里面发送消息，一个队列可以存储多个生产者的消息，一个队列也可以有多个消费者，但是消费者之间是竞争关系，也就是说每条消息只能被一个消费者消费</p>
+<h5 id="发布-订阅模型"><a href="#发布-订阅模型" class="headerlink" title="发布&#x2F;订阅模型"></a>发布&#x2F;订阅模型</h5><ul>
+<li>如果需要将一份消息数据分发给多个消费者，并且每个消费者都要求收到全量的消息。很显然，队列模型无法满足这个需求。解决的方式就是发布&#x2F;订阅模型。</li>
+<li>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。每份订阅中，订阅者都可以接收到主题的所有消息</li>
+<li>RocketMQ 使用的消息模型是标准的发布-订阅模型，RocketMQ 本身的消息包括Message、Topic、Tag、Queue、Group和Offset组成</li>
+</ul>
+<h3 id="消息消费模式"><a href="#消息消费模式" class="headerlink" title="消息消费模式"></a>消息消费模式</h3><h5 id="Clustering（集群消费）"><a href="#Clustering（集群消费）" class="headerlink" title="Clustering（集群消费）"></a>Clustering（集群消费）</h5><p>默认情况下就是集群消费，这种模式下一个消费者组共同消费一个主题的多个队列，一个队列只会被一个消费者消费，如果某个消费者挂掉，分组内其它消费者会接替挂掉的消费者继续消费</p>
+<h5 id="Broadcasting（广播消费）"><a href="#Broadcasting（广播消费）" class="headerlink" title="Broadcasting（广播消费）"></a>Broadcasting（广播消费）</h5><p>广播消费消息会发给消费者组中的每一个消费者进行消费</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
